@@ -3,6 +3,9 @@ import 'head_form.dart';
 import 'package:asha_frontend/features/family/ui/widgets/common_form_widgets.dart';
 // IMPORTANT: apna HealthCaseDropdown jaha rakha hai uska sahi import lagao:
 import 'package:asha_frontend/features/family/ui/widgets/health_case_dropdown.dart'; // path adjust if needed
+import 'package:asha_frontend/features/anc/state/anc_controller.dart';
+import 'package:asha_frontend/features/anc/ui/anc_form.dart';
+
 
 class AddFamilyPage extends StatefulWidget {
   const AddFamilyPage({super.key});
@@ -21,6 +24,8 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   final _headPhone = TextEditingController();
   final _headAadhaar = TextEditingController();
   final _headLandmark = TextEditingController();
+  final _ancController = AncController();
+
 
   String? _gender;
 
@@ -103,6 +108,8 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
 
               const SizedBox(height: 24),
               // yaha baad me: ANC / PNC / TB / NCD sections conditionally add karenge
+              if (_selectedHealthCase == 'ANC')
+                AncForm(controller: _ancController),
             ],
           ),
         ),
