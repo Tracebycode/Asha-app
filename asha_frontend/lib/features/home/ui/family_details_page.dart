@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:asha_frontend/features/home/ui/existing_family_page.dart';
 import 'package:asha_frontend/features/home/ui/daily_survey.dart';
-import 'package:asha_frontend/features/family/ui/add_family.dart';
+import 'package:asha_frontend/features/family/ui/add_family_page.dart';
 
 class FamilyDetailsPage extends StatelessWidget {
   const FamilyDetailsPage({super.key});
