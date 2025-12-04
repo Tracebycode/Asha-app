@@ -29,4 +29,49 @@ class MembersDao {
     final db = await _db;
     return await db.query("family_members");
   }
+
+  Future<List<Map<String, dynamic>>> getUnsyncedMembers() async {
+    final db = await _db;
+
+    return await db.query(
+      "family_members",
+      where: "is_dirty = ?",
+      whereArgs: [1],
+    );
+  }
+
+  Future<void> markAsSynced(String clientId, String serverId) async {
+    final db = await _db;
+
+    await db.update(
+      "family_members",
+      {
+        "server_id": serverId,
+        "is_dirty": 0,
+        "dirty_operation": "synced",
+        "synced_at": DateTime.now().toIso8601String(),
+      },
+      where: "client_id = ?",
+      whereArgs: [clientId],
+    );
+  }
+  Future<void> updateMembersFamilyId({
+    required String clientFamilyId,
+    required String serverFamilyId,
+  }) async {
+    final db = await _db;
+
+    await db.update(
+      "family_members",
+      {
+        "family_id": serverFamilyId,
+        "is_dirty": 1,
+        "dirty_operation": "update",
+        "local_updated_at": DateTime.now().toIso8601String(),
+      },
+      where: "family_client_id = ?",
+      whereArgs: [clientFamilyId],
+    );
+  }
+
 }

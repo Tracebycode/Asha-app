@@ -46,23 +46,26 @@ class AppDatabase {
 
     await db.execute('''
       CREATE TABLE family_members (
-        client_id TEXT PRIMARY KEY,
-        id TEXT,
-        family_client_id TEXT,
-        family_id TEXT,
-        name TEXT,
-        gender TEXT,
-        age INTEGER,
-        relation TEXT,
-         aadhaar TEXT,
-          phone TEXT,
-        is_alive INTEGER,
-        dob TEXT,
-        device_created_at TEXT,
-        device_updated_at TEXT,
-        is_dirty INTEGER DEFAULT 1,
-        dirty_operation TEXT,
-        local_updated_at TEXT
+  client_id TEXT PRIMARY KEY,
+  server_id TEXT,
+  family_client_id TEXT,
+  family_id TEXT,
+  name TEXT,
+  age INTEGER,
+  gender TEXT,
+  relation TEXT,
+  aadhaar TEXT,
+  phone TEXT,
+  is_alive INTEGER,
+  dob TEXT,
+  device_created_at TEXT,
+  device_updated_at TEXT,
+  is_dirty INTEGER,
+  dirty_operation TEXT,
+  local_updated_at TEXT,
+  synced_at TEXT
+);
+
       );
     ''');
 

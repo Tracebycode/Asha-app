@@ -104,5 +104,72 @@ class ApiService {
 
     return response;
   }
+
+
 // --- END: ADD NEW AUTHENTICATED METHODS ---
+
+// 🔥 2: helper - GET auth header
+  Future<Map<String, String>> _authHeaders() async {
+    final token = await _storage.getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  // 🔥 3: FAMILY CREATE (for sync)
+  Future<http.Response> createFamilyFromLocal(
+      Map<String, dynamic> localRow) async {
+    final url = Uri.parse('$_baseUrl/families/create');
+
+    // ⚠️ IMPORTANT: Backend ko sirf zaroori fields bhejna
+    final body = {
+      "area_id": localRow["area_id"],            // JWT se bhi aa sakta hai
+      "address_line": localRow["address_line"],
+      "landmark": localRow["landmark"],
+      "phone": localRow["phone"],
+      // helpful hai agar server mapping store kare
+      "client_id": localRow["client_id"],
+      "device_created_at": localRow["device_created_at"],
+      "device_updated_at": localRow["device_updated_at"],
+    };
+
+    final headers = await _authHeaders();
+
+    return await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+  }
+
+  Future<http.Response> createMemberFromLocal(
+      Map<String, dynamic> memberRow) async {
+    final headers = await _authHeaders();
+
+    final adhaarRaw = memberRow["aadhaar"]?.toString() ?? "";
+
+    final body = {
+      "family_id": memberRow["family_id"],      // 👈 server family_id
+      "name": memberRow["name"],
+      "age": memberRow["age"],
+      "gender": memberRow["gender"],
+      "relation": memberRow["relation"],
+      "adhar_number": adhaarRaw,               // 👈 BACKEND FIELD NAME
+      "phone": memberRow["phone"],
+
+      // extra meta (backend ignore karega, but future me kaam aa sakta):
+      "client_id": memberRow["client_id"],
+      "device_created_at": memberRow["device_created_at"],
+      "device_updated_at": memberRow["device_updated_at"],
+    };
+
+    return await http.post(
+      Uri.parse("$_baseUrl/families/add/members"),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+  }
+
+
 }
