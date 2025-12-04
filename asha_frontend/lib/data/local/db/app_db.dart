@@ -19,23 +19,39 @@ class AppDatabase {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3, // ⬅️ BUMPED
       onCreate: _createTables,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // DEV PHASE: simplest = drop & recreate
+        // (Agar data preserve karna hai to baad me migration likhenge)
+        if (oldVersion < 3) {
+          await db.execute("DROP TABLE IF EXISTS health_records;");
+          await db.execute("DROP TABLE IF EXISTS family_members;");
+          await db.execute("DROP TABLE IF EXISTS families;");
+          await _createTables(db, newVersion);
+        }
+      },
     );
   }
 
   Future<void> _createTables(Database db, int version) async {
+    // ----------------------------
+    // 1. FAMILIES
+    // ----------------------------
     await db.execute('''
       CREATE TABLE families (
-        client_id TEXT PRIMARY KEY,
-        id TEXT,
+        id TEXT PRIMARY KEY,              -- local UUID
+        client_id TEXT,                   -- server UUID
+
         phone TEXT,
         address_line TEXT,
         landmark TEXT,
+
         phc_id TEXT,
         area_id TEXT,
         asha_worker_id TEXT,
         anm_worker_id TEXT,
+
         device_created_at TEXT,
         device_updated_at TEXT,
         is_dirty INTEGER DEFAULT 1,
@@ -44,50 +60,63 @@ class AppDatabase {
       );
     ''');
 
+    // ----------------------------
+    // 2. FAMILY MEMBERS
+    // ----------------------------
     await db.execute('''
       CREATE TABLE family_members (
-  client_id TEXT PRIMARY KEY,
-  server_id TEXT,
-  family_client_id TEXT,
-  family_id TEXT,
-  name TEXT,
-  age INTEGER,
-  gender TEXT,
-  relation TEXT,
-  aadhaar TEXT,
-  phone TEXT,
-  is_alive INTEGER,
-  dob TEXT,
-  device_created_at TEXT,
-  device_updated_at TEXT,
-  is_dirty INTEGER,
-  dirty_operation TEXT,
-  local_updated_at TEXT,
-  synced_at TEXT
-);
+        id TEXT PRIMARY KEY,             -- local UUID
+        client_id TEXT,                  -- server UUID
 
+        family_id TEXT,                  -- local family id
+        family_client_id TEXT,           -- server family id
+
+        name TEXT,
+        age INTEGER,
+        gender TEXT,
+        relation TEXT,
+        aadhaar TEXT,                    -- local field; API mein adhar_number map karenge
+        phone TEXT,
+        is_alive INTEGER,
+        dob TEXT,
+
+        device_created_at TEXT,
+        device_updated_at TEXT,
+        is_dirty INTEGER DEFAULT 1,
+        dirty_operation TEXT,
+        local_updated_at TEXT,
+        synced_at TEXT
       );
     ''');
 
+    // ----------------------------
+    // 3. HEALTH RECORDS
+    // ----------------------------
     await db.execute('''
-     CREATE TABLE IF NOT EXISTS health_records (
-  id TEXT PRIMARY KEY,
-  phc_id TEXT,
-  member_id TEXT,
-  member_client_id TEXT,
-  asha_worker_id TEXT,
-  anm_worker_id TEXT,
-  area_id TEXT,
-  task_id TEXT,
-  visit_type TEXT,
-  data_json TEXT,
-  device_created_at TEXT,
-  device_updated_at TEXT,
-  synced_at TEXT,
-  dirty_operation TEXT,
-  is_dirty INTEGER DEFAULT 1,
-  local_updated_at TEXT
-);
+      CREATE TABLE health_records (
+        id TEXT PRIMARY KEY,             -- local UUID
+        client_id TEXT,                  -- server UUID
+
+        family_id TEXT,                  -- local family id
+        family_client_id TEXT,           -- server family id
+        member_id TEXT,                  -- local member id
+        member_client_id TEXT,           -- server member id
+
+        phc_id TEXT,
+        asha_worker_id TEXT,
+        anm_worker_id TEXT,
+        area_id TEXT,
+        task_id TEXT,
+        visit_type TEXT,
+        data_json TEXT,                  -- JSON string
+
+        device_created_at TEXT,
+        device_updated_at TEXT,
+        synced_at TEXT,
+        dirty_operation TEXT,
+        is_dirty INTEGER DEFAULT 1,
+        local_updated_at TEXT
+      );
     ''');
   }
 }

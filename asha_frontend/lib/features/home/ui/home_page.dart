@@ -3,6 +3,9 @@ import 'package:asha_frontend/auth/session.dart';
 import 'package:asha_frontend/features/family/ui/add_family_page.dart';
 import 'package:asha_frontend/features/home/ui/family_details_page.dart';
 import 'package:asha_frontend/debug/families_test.dart';
+import 'package:asha_frontend/sync/sync_families_service.dart';
+import 'package:asha_frontend/sync/member_sync_service.dart';
+import 'package:asha_frontend/sync/health_record_sync_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,6 +15,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final syncFamilies = SyncFamiliesService();
+  final syncMembers = MemberSyncService();
+  final syncHealth = HealthRecordSyncService();
+
+  bool _syncing = false;
+  Future<void> performFullSync() async {
+    if (_syncing) return;
+
+    setState(() => _syncing = true);
+
+    print("🔄 FULL SYNC STARTED");
+
+    await syncFamilies.syncFamilies();
+    await syncMembers.syncMembers();
+    await syncHealth.syncHealthRecords();
+
+    print("✅ FULL SYNC COMPLETE");
+
+    setState(() => _syncing = false);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sync completed")),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -36,12 +65,29 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {},
         ),
         actions: [
+          // 🔄 SYNC BUTTON ADDED HERE
+          IconButton(
+            icon: _syncing
+                ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+                : const Icon(Icons.sync, color: Colors.white),
+            onPressed: _syncing ? null : performFullSync,
+          ),
+
+          // Existing profile button
           IconButton(
             icon: const Icon(Icons.person, color: Colors.white),
             onPressed: () {},
           ),
         ],
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -54,6 +100,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -68,6 +115,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUserInfo() {
+    final s = Session.instance;
+
     return Card(
       elevation: 2.0,
       shape: const RoundedRectangleBorder(
@@ -79,17 +128,34 @@ class _HomePageState extends State<HomePage> {
           children: [
             const CircleAvatar(child: Icon(Icons.person)),
             const SizedBox(width: 12),
-            const Column(
+
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Rekha Sharma', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Rampur Village', style: TextStyle(color: Colors.grey)),
+                Text(
+                  s.name ?? "Unknown ASHA",
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text(
+                  s.areaName ?? "No area assigned",
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
+
             const Spacer(),
+
+            // Online / Offline indicator
             Chip(
-              avatar: const Icon(Icons.wifi, color: Colors.green, size: 16),
-              label: const Text('Online', style: TextStyle(color: Colors.green)),
+              avatar: Icon(
+                Icons.wifi,
+                color: Colors.green,
+                size: 16,
+              ),
+              label: const Text(
+                'Online',
+                style: TextStyle(color: Colors.green),
+              ),
               backgroundColor: Colors.green.withOpacity(0.1),
               side: BorderSide.none,
             ),
@@ -98,6 +164,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   Widget _buildDashboardGrid(BuildContext context) {
     return GridView.count(
@@ -195,6 +262,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   Widget _buildTasksFromSupervisor(context) {
     return Card(

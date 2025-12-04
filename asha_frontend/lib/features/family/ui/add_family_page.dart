@@ -6,7 +6,7 @@ import 'package:asha_frontend/data/local/dao/health_records_dao.dart';
 import 'package:asha_frontend/auth/session.dart';
 import 'package:asha_frontend/data/local/dao/members_dao.dart';
 import 'package:asha_frontend/data/repositories/members_repository.dart';
-
+import 'package:asha_frontend/data/repositories/health_records_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
@@ -14,7 +14,6 @@ import 'dart:convert';
 
 
 class _MemberSummary {
-  final String clientId;       // 👈 NEW FIELD
   String name;
   int age;
   String? gender;
@@ -25,7 +24,6 @@ class _MemberSummary {
   Map<String, dynamic> healthDetails;
 
   _MemberSummary({
-    required this.clientId,    // 👈 NEW REQUIRED ARG
     required this.name,
     required this.age,
     this.gender,
@@ -70,22 +68,31 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   void _onSaveFamilyBasics() async {
     if (_formKey.currentState?.validate() != true) return;
 
-    // Create family id if first time
-    _familyClientId ??= "fam_${const Uuid().v4()}";
+    // CREATE LOCAL FAMILY ID
+    final String localFamilyId = const Uuid().v4();
+    _familyClientId = localFamilyId;
+
+    final now = DateTime.now().toIso8601String();
 
     final familyData = {
-      "client_id": _familyClientId,
+      "id": localFamilyId,            // LOCAL PK
+      "client_id": null,              // server id after sync
+
       "address_line": _addressController.text.trim(),
       "landmark": _landmarkController.text.trim(),
       "phone": _mobileController.text.trim(),
+
       "phc_id": Session.instance.phcId,
       "area_id": Session.instance.areaId,
       "asha_worker_id": Session.instance.ashaWorkerId,
-      "device_created_at": DateTime.now().toIso8601String(),
-      "device_updated_at": DateTime.now().toIso8601String(),
+      "anm_worker_id": Session.instance.anmWorkerId,
+
+      "device_created_at": now,
+      "device_updated_at": now,
+
       "is_dirty": 1,
       "dirty_operation": "insert",
-      "local_updated_at": DateTime.now().toIso8601String(),
+      "local_updated_at": now,
     };
 
     await _familiesDao.insertFamily(familyData);
@@ -98,6 +105,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
 
     setState(() {});
   }
+
 
 
   Future<void> _onFinalSaveFamily() async {
@@ -116,11 +124,17 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     }
 
     final membersRepo = MembersRepository(MembersDao());
+    final healthRepo = HealthRecordsRepository(
+      HealthRecordsDao(),
+      MembersDao(),
+      FamiliesDao(),
+    );
 
     for (final m in _members) {
-      // Save each member
-      await membersRepo.createMember(
-        familyClientId: _familyClientId!,
+
+      // 1️⃣ Save member → REAL LOCAL DB ID milta hai
+      final localMemberId = await membersRepo.createMember(
+        localFamilyId: _familyClientId!,
         member: {
           "name": m.name,
           "age": m.age,
@@ -131,22 +145,12 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
         },
       );
 
-      // Save health cases for each member (local)
+      // 2️⃣ Now use REAL LOCAL ID for health
       for (final hc in m.healthCases) {
-        final recordId = "hr_${const Uuid().v4()}";
-
-        await  HealthRecordsDao().insertRecord(
-          {
-            "id": recordId,
-            "member_client_id": m.clientId,
-            "visit_type": hc,
-            "data_json": jsonEncode(m.healthDetails[hc] ?? {}),
-            "is_dirty": 1,
-            "dirty_operation": "insert",
-            "device_created_at": DateTime.now().toIso8601String(),
-            "device_updated_at": DateTime.now().toIso8601String(),
-            "local_updated_at": DateTime.now().toIso8601String(),
-          },
+        await healthRepo.saveHealthRecord(
+          localMemberId: localMemberId,     // <-- 🔥 FIXED
+          visitType: hc,
+          dataJson: m.healthDetails[hc] ?? {},
         );
       }
     }
@@ -159,6 +163,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
 
     Navigator.pop(context);
   }
+
 
 
 
@@ -177,7 +182,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       setState(() {
         _members.add(
           _MemberSummary(
-            clientId: memberClientId,
             name: result["name"],
             age: result["age"],
             gender: result["gender"],
@@ -218,7 +222,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     if (updated != null) {
       setState(() {
         _members[index] = _MemberSummary(
-          clientId: m.clientId,   // 👈 SAME ID PRESERVED
           name: updated["name"],
           age: updated["age"],
           gender: updated["gender"],
