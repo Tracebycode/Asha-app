@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:asha_frontend/data/local/dao/members_dao.dart';
 import 'package:asha_frontend/data/local/dao/health_records_dao.dart';
 import 'package:asha_frontend/core/services/api_service.dart';
@@ -7,7 +5,7 @@ import 'package:asha_frontend/core/services/api_service.dart';
 class MemberSyncService {
   final MembersDao membersDao = MembersDao();
   final HealthRecordsDao healthDao = HealthRecordsDao();
-  final ApiService api = ApiService();
+  final ApiClient api = ApiClient();
 
   Future<void> syncMembers() async {
     final unsynced = await membersDao.getUnsyncedMembers();
@@ -20,15 +18,15 @@ class MemberSyncService {
     print("🔄 Syncing ${unsynced.length} members...\n");
 
     for (final m in unsynced) {
-      final String localMemberId = m["id"];          // local PK
+      final String localMemberId = m["id"];       // LOCAL UUID
       final String? serverMemberId = m["client_id"]; // null before sync
-      final String? serverFamilyId = m["family_client_id"];
+      final String? serverFamilyId = m["family_id"]; // server family id
 
       // -----------------------------------------------------------
       // 1️⃣ FAMILY MUST BE SYNCED FIRST
       // -----------------------------------------------------------
       if (serverFamilyId == null) {
-        print("⚠ Skipping $localMemberId → family NOT synced yet");
+        print("⚠ SKIPPED MEMBER $localMemberId → FAMILY NOT SYNCED");
         continue;
       }
 
@@ -36,51 +34,47 @@ class MemberSyncService {
         print("📤 Uploading MEMBER → local_id=$localMemberId");
 
         // -----------------------------------------------------------
-        // 2️⃣ SEND TO BACKEND
+        // 2️⃣ SEND TO BACKEND (returns Map)
         // -----------------------------------------------------------
-        final http.Response resp = await api.createMemberFromLocal(m);
+        final data = await api.createMemberFromLocal(m);
 
-        if (resp.statusCode == 200 || resp.statusCode == 201) {
-          final data = jsonDecode(resp.body);
+        // backend returns:
+        // { member: { id: xxx } }  OR  { id: xxx }
+        final String? newServerId =
+            data["member"]?["id"] ??
+                data["id"];
 
-          // backend returns: { member: { id: "..." } }
-          final String? newServerId =
-              data["member"]?["id"] ?? data["id"];
-
-          if (newServerId == null) {
-            print("⚠ Server returned NO member.id");
-            continue;
-          }
-
-          print("🌐 MEMBER SYNCED → $localMemberId → $newServerId");
-
-          // -----------------------------------------------------------
-          // 3️⃣ UPDATE LOCAL MEMBER WITH SERVER ID
-          // -----------------------------------------------------------
-          await membersDao.markAsSynced(
-            localId: localMemberId,
-            serverId: newServerId,
-          );
-
-          // -----------------------------------------------------------
-          // 4️⃣ UPDATE health_records.member_client_id
-          // -----------------------------------------------------------
-          await healthDao.updateMemberServerIdOnHealth(
-            localMemberId: localMemberId,
-            serverMemberId: newServerId,
-          );
-
-          print("🩺 Updated health_records for member → $newServerId\n");
+        if (newServerId == null) {
+          print("⚠ Server returned NO member id.");
+          continue;
         }
 
+        print("🌐 MEMBER SYNCED → $localMemberId → $newServerId");
+
         // -----------------------------------------------------------
-        // ❌ FAILURE
+        // 3️⃣ UPDATE LOCAL MEMBER RECORD
         // -----------------------------------------------------------
-        else {
-          print("❌ Member sync FAILED ($localMemberId) → "
-              "${resp.statusCode} | ${resp.body}");
-        }
-      } catch (e) {
+        await membersDao.markAsSynced(
+          localId: localMemberId,
+          serverId: newServerId,
+        );
+
+        // -----------------------------------------------------------
+        // 4️⃣ UPDATE HEALTH RECORD RELATIONS
+        //
+        // health_records:
+        //    member_id         = serverMemberId
+        //    member_client_id  = localMemberId
+        // -----------------------------------------------------------
+        await healthDao.updateMemberServerIdOnHealth(
+          localMemberId: localMemberId,
+          serverMemberId: newServerId,
+        );
+
+        print("🩺 Updated health_records for member → server_id=$newServerId\n");
+      }
+
+      catch (e) {
         print("💥 Exception syncing member $localMemberId → $e");
       }
     }

@@ -1,11 +1,15 @@
 import 'package:sqflite/sqflite.dart';
 import '../db/app_db.dart';
+import 'dart:convert';
+import 'package:uuid/uuid.dart';
 
 class MembersDao {
+  final uuid = Uuid();
+
   Future<Database> get _db async => await AppDatabase.instance.database;
 
   // ----------------------------------------------------------
-  // INSERT MEMBER (local only)
+  // INSERT LOCAL-ONLY MEMBER
   // ----------------------------------------------------------
   Future<void> insertMember(Map<String, dynamic> data) async {
     final db = await _db;
@@ -17,8 +21,7 @@ class MembersDao {
   }
 
   // ----------------------------------------------------------
-  // GET MEMBERS BY LOCAL FAMILY ID
-  // family_client_id = LOCAL FAMILY ID
+  // GET MEMBERS BY LOCAL FAMILY ID (family_client_id)
   // ----------------------------------------------------------
   Future<List<Map<String, dynamic>>> getMembersByLocalFamilyId(
       String localFamilyId) async {
@@ -33,8 +36,7 @@ class MembersDao {
   }
 
   // ----------------------------------------------------------
-  // GET MEMBERS BY SERVER FAMILY ID
-  // family_id = SERVER FAMILY ID
+  // GET MEMBERS BY *SERVER FAMILY ID*
   // ----------------------------------------------------------
   Future<List<Map<String, dynamic>>> getMembersByServerFamilyId(
       String serverFamilyId) async {
@@ -74,8 +76,7 @@ class MembersDao {
   }
 
   // ----------------------------------------------------------
-  // MEMBER SYNCED → SET SERVER MEMBER ID
-  // client_id = server member id
+  // MARK MEMBER AS SYNCED
   // ----------------------------------------------------------
   Future<void> markAsSynced({
     required String localId,
@@ -86,10 +87,9 @@ class MembersDao {
     await db.update(
       "family_members",
       {
-        "client_id": serverId,                 // SERVER MEMBER ID
+        "client_id": serverId,
         "is_dirty": 0,
         "dirty_operation": "synced",
-        "synced_at": DateTime.now().toIso8601String(),
         "local_updated_at": DateTime.now().toIso8601String(),
       },
       where: "id = ?",
@@ -98,10 +98,7 @@ class MembersDao {
   }
 
   // ----------------------------------------------------------
-  // AFTER FAMILY SYNC → UPDATE SERVER FAMILY ID IN MEMBERS
-  //
-  // family_client_id = LOCAL FAMILY ID (unchanged)
-  // family_id        = SERVER FAMILY ID (updated)
+  // UPDATE FAMILY SERVER ID AFTER FAMILY SYNC
   // ----------------------------------------------------------
   Future<void> updateFamilyServerId({
     required String localFamilyId,
@@ -112,11 +109,102 @@ class MembersDao {
     await db.update(
       "family_members",
       {
-        "family_client_id": serverFamilyId,  // ✔ CORRECT COLUMN
+        "family_id": serverFamilyId, // update server family id
         "local_updated_at": DateTime.now().toIso8601String(),
       },
-      where: "family_id = ?",   // local id match
+      where: "family_client_id = ?", // match local id
       whereArgs: [localFamilyId],
+    );
+  }
+
+  // ==========================================================
+  // INSERT DOWNLOADED MEMBERS (Perfect mapping)
+  // Returns: Map<serverMemberId → localMemberId>
+  // ==========================================================
+  Future<Map<String, String>> insertDownloadedMembers(
+      List<Map<String, dynamic>> members,
+      String localFamilyId,
+      String serverFamilyId,
+      ) async {
+    final db = await _db;
+    Map<String, String> memberIdMap = {};
+
+    for (var m in members) {
+      final serverMemberId = m["id"];
+      final localMemberId = uuid.v4();
+
+      memberIdMap[serverMemberId] = localMemberId;
+
+      await db.insert(
+        "family_members",
+        {
+          "id": localMemberId,            // local member uuid
+          "client_id": serverMemberId,    // server member id
+
+          "family_id": serverFamilyId,        // SERVER family id
+          "family_client_id": localFamilyId,  // LOCAL family id
+
+          "name": m["name"],
+          "phone": m["phone"],
+          "age": m["age"],
+          "gender": m["gender"],
+          "relation": m["relation"],
+          "aadhaar": m["adhar_number"],  // backend field → sqlite column
+
+          "dob": m["dob"],
+
+          "is_dirty": 0,
+          "dirty_operation": "synced",
+          "local_updated_at": DateTime.now().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    return memberIdMap;
+  }
+
+  // ----------------------------------------------------------
+  // GET DOWNLOADED MEMBERS (offline)
+  // ----------------------------------------------------------
+  Future<List<Map<String, dynamic>>> getDownloadedMembers(
+      String serverFamilyId) async {
+    final db = await _db;
+
+    return await db.query(
+      "family_members",
+      where: "family_id = ? AND is_dirty = 0",
+      whereArgs: [serverFamilyId],
+      orderBy: "local_updated_at DESC",
+    );
+  }
+
+  // ----------------------------------------------------------
+  // GET LOCAL MEMBER BY ID
+  // ----------------------------------------------------------
+  Future<Map<String, dynamic>?> getMemberByLocalId(String localId) async {
+    final db = await _db;
+
+    final result = await db.query(
+      "family_members",
+      where: "id = ?",
+      whereArgs: [localId],
+      limit: 1,
+    );
+
+    return result.isNotEmpty ? result.first : null;
+  }
+  // -------------------------------------------------------
+// GET MEMBERS BY LOCAL FAMILY ID (id column)
+// -------------------------------------------------------
+  Future<List<Map<String, dynamic>>> getMembersByFamilyId(String localFamilyId) async {
+    final db = await _db;
+
+    return db.query(
+      "family_members",
+      where: "family_client_id = ?",   // local family id
+      whereArgs: [localFamilyId],
+      orderBy: "local_updated_at DESC",
     );
   }
 

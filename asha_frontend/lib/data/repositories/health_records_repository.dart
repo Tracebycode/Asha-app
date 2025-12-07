@@ -14,66 +14,70 @@ class HealthRecordsRepository {
       this.familiesDao,
       );
 
+  // -------------------------------------------------------------
+  // 1️⃣ SAVE HEALTH RECORD (LOCAL ONLY - OFFLINE)
+  // -------------------------------------------------------------
   Future<String> saveHealthRecord({
-    required String localMemberId,       // LOCAL MEMBER ID
-    required String visitType,           // ANC / PNC / NCD / TB / ...
+    required String localMemberId,
+    required String visitType,
     required Map<String, dynamic> dataJson,
-    String? taskId,                      // optional
+    String? taskId,
   }) async {
-    final String localHealthId = const Uuid().v4();
     final now = DateTime.now().toIso8601String();
+    final localHealthId = const Uuid().v4();
 
     // -----------------------------------------------------
-    // 1. FETCH MEMBER (must use LOCAL member_id)
+    // 1. FETCH THE LOCAL MEMBER
     // -----------------------------------------------------
-    final allMembers = await membersDao.getAllMembers();
-    final member = allMembers.firstWhere(
-          (m) => m['id'] == localMemberId,
-      orElse: () => throw Exception("Member not found: $localMemberId"),
-    );
+    final member = await membersDao.getMemberByLocalId(localMemberId);
+    if (member == null) {
+      throw Exception("Member not found: $localMemberId");
+    }
 
-    final localFamilyId = member['family_id'];              // LOCAL FK
-    final serverMemberId = member['client_id'];             // SERVER FK
-    final serverFamilyId = member['family_client_id'];      // SERVER FK
+    // CORRECT MAPPING:
+    final localFamilyId = member["family_client_id"]; // LOCAL family
+    final serverFamilyId = member["family_id"];       // SERVER family
+    final serverMemberId = member["client_id"];       // SERVER member
 
     // -----------------------------------------------------
-    // 2. FETCH FAMILY
+    // 2. FETCH LOCAL FAMILY
     // -----------------------------------------------------
-    final allFamilies = await familiesDao.getAllFamilies();
-    final family = allFamilies.firstWhere(
-          (f) => f['id'] == localFamilyId,
+    final families = await familiesDao.getAllFamilies();
+    final family = families.firstWhere(
+          (f) => f["id"] == localFamilyId,
       orElse: () => throw Exception("Family not found: $localFamilyId"),
     );
 
-    final phcId = family['phc_id'];
-    final areaId = family['area_id'];
-    final ashaId = family['asha_worker_id'];
-    final anmId = family['anm_worker_id'];
+    final phcId = family["phc_id"];
+    final areaId = family["area_id"];
+    final ashaId = family["asha_worker_id"];
+    final anmId = family["anm_worker_id"];
 
     // -----------------------------------------------------
-    // 3. BUILD HEALTH RECORD (LOCAL)
+    // 3. BUILD CORRECT HEALTH RECORD (consistent with DAO)
     // -----------------------------------------------------
     final record = {
-      "id": localHealthId,               // LOCAL PK
-      "client_id": null,                 // SERVER UUID after sync
+      "id": localHealthId,       // LOCAL
+      "client_id": null,         // SERVER after sync
 
-      // --- Linking ---
-      "member_id": localMemberId,        // LOCAL PK
-      "member_client_id": serverMemberId, // SERVER PK (nullable)
+      // ---------------------------------------------------
+      // Correct relationship mapping
+      // ---------------------------------------------------
+      "member_id": serverMemberId,        // SERVER MEMBER ID (can be null before sync)
+      "member_client_id": localMemberId,  // LOCAL MEMBER ID
 
-      "family_id": localFamilyId,        // LOCAL FK
-      "family_client_id": serverFamilyId, // SERVER FK (nullable)
+      "family_id": serverFamilyId,        // SERVER FAMILY ID (can be null before sync)
+      "family_client_id": localFamilyId,  // LOCAL FAMILY ID
 
       "phc_id": phcId,
       "area_id": areaId,
       "asha_worker_id": ashaId,
       "anm_worker_id": anmId,
 
-      "task_id": taskId,                 // can be null
+      "task_id": taskId,
       "visit_type": visitType,
-      "data_json": dataJson,             // stored as JSON by DAO
+      "data_json": dataJson,  // DAO will encode JSON
 
-      // --- Sync meta ---
       "device_created_at": now,
       "device_updated_at": now,
       "local_updated_at": now,
@@ -83,15 +87,18 @@ class HealthRecordsRepository {
 
     await dao.insertRecord(record);
 
-    print("💾 HEALTH RECORD SAVED => $localHealthId");
+    print("💾 HEALTH RECORD SAVED LOCALLY: $localHealthId");
     return localHealthId;
   }
 
-  Future<List<Map<String, dynamic>>> getAllRecords() async {
-    return await dao.getAllRecords();
+  // -------------------------------------------------------------
+  // 2️⃣ GETTERS
+  // -------------------------------------------------------------
+  Future<List<Map<String, dynamic>>> getAllRecords() {
+    return dao.getAllRecords();
   }
 
-  Future<List<Map<String, dynamic>>> getUnsynced() async {
-    return await dao.getUnsyncedRecords();
+  Future<List<Map<String, dynamic>>> getUnsynced() {
+    return dao.getUnsyncedRecords();
   }
 }

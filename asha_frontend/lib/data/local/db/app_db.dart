@@ -51,6 +51,8 @@ class AppDatabase {
         area_id TEXT,
         asha_worker_id TEXT,
         anm_worker_id TEXT,
+        head_member_id TEXT,
+
 
         device_created_at TEXT,
         device_updated_at TEXT,

@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 import 'package:asha_frontend/data/local/dao/health_records_dao.dart';
 import 'package:asha_frontend/core/services/api_service.dart';
 
 class HealthRecordSyncService {
   final HealthRecordsDao healthDao = HealthRecordsDao();
-  final ApiService api = ApiService();
+  final ApiClient api = ApiClient();
 
   Future<void> syncHealthRecords() async {
     final unsynced = await healthDao.getUnsyncedRecords();
@@ -19,30 +17,23 @@ class HealthRecordSyncService {
     print("🔄 Syncing ${unsynced.length} health records...\n");
 
     for (final row in unsynced) {
-      final String localHealthId = row["id"];
-      final String? serverMemberId = row["member_client_id"];
-      final String? serverFamilyId = row["family_client_id"];
+      final localHealthId = row["id"];
 
-      // --------------------------------------------------
-      // 1) Member must be synced first
-      // --------------------------------------------------
+      // SERVER IDs
+      final serverMemberId = row["member_id"];     // SERVER MEMBER ID
+      final serverFamilyId = row["family_id"];     // SERVER FAMILY ID
+
       if (serverMemberId == null) {
-        print("⚠ Skipping $localHealthId → member NOT synced yet");
+        print("⚠ Skipping $localHealthId → MEMBER NOT SYNCED");
         continue;
       }
 
-      // --------------------------------------------------
-      // 2) Family must be synced first
-      // --------------------------------------------------
       if (serverFamilyId == null) {
-        print("⚠ Skipping $localHealthId → family NOT synced yet");
+        print("⚠ Skipping $localHealthId → FAMILY NOT SYNCED");
         continue;
       }
 
-      // --------------------------------------------------
-      // 3) Prepare payload
-      // --------------------------------------------------
-      final dataJson = row["data_json"] is String
+      final jsonData = row["data_json"] is String
           ? jsonDecode(row["data_json"])
           : row["data_json"];
 
@@ -50,50 +41,39 @@ class HealthRecordSyncService {
         "member_id": serverMemberId,
         "task_id": row["task_id"],
         "visit_type": row["visit_type"],
-        "data_json": dataJson,
+        "data_json": jsonData,
       };
 
       print("📤 Uploading HEALTH RECORD → $localHealthId");
 
       try {
-        // --------------------------------------------------
-        // 4) SEND TO BACKEND
-        // --------------------------------------------------
-        final http.Response resp =
-        await api.createHealthRecordFromLocal(payload);
+        // ApiClient now accepts a single map
+        final data = await api.createHealthRecordFromLocal(payload);
+        print("🩺 SERVER HEALTH RESPONSE: $data");  // <--- ADD THIS
 
-        if (resp.statusCode == 200 || resp.statusCode == 201) {
-          final json = jsonDecode(resp.body);
+        final record = data["record"];
+        if (record == null) {
+          print("❌ ERROR: Backend did not return 'record'");
+          continue;
+        }
 
-          final record = json["record"] ?? json;
+        final serverHealthId = record["id"];
+        if (serverHealthId == null) {
+          print("❌ ERROR: record['id'] missing in backend response");
+          continue;
+        }
 
-          final String serverHealthId = record["id"];
+        print("🌐 HEALTH SYNCED → $localHealthId → $serverHealthId");
 
-          print("🌐 HEALTH SYNCED → $localHealthId → $serverHealthId");
-
-          // --------------------------------------------------
-          // 5) FULL UPDATE IN LOCAL DB
-          // --------------------------------------------------
-          await healthDao.updateAfterSync(localHealthId, {
+        await healthDao.updateAfterSync(
+          localHealthId,
+          {
             "client_id": serverHealthId,
-
-            "phc_id": record["phc_id"],
-            "asha_worker_id": record["asha_worker_id"],
-            "anm_worker_id": record["anm_worker_id"],
-            "area_id": record["area_id"],
-
-            "synced_at": DateTime.now().toIso8601String(),
             "is_dirty": 0,
             "dirty_operation": "synced",
-          });
-        }
-
-        // --------------------------------------------------
-        // ❌ FAILURE
-        // --------------------------------------------------
-        else {
-          print("❌ Failed → ${resp.statusCode} | ${resp.body}");
-        }
+            "local_updated_at": DateTime.now().toIso8601String(),
+          },
+        );
       } catch (e) {
         print("💥 Exception syncing $localHealthId → $e");
       }
