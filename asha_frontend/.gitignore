@@ -11,6 +11,12 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+/asha_frontend/linux
+/asha_frontend/windows
+/asha_frontend/macos
+/asha_frontend/ios
+/asha_frontend/android
+
 
 # IntelliJ related
 *.iml
