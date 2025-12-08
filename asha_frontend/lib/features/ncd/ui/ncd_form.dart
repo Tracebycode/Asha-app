@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:asha_frontend/features/ncd/state/ncd_controller.dart';
+import 'package:asha_frontend/features/ncd/ui/ncd_result_page.dart';
 
 class NcdForm extends StatefulWidget {
   final NcdController controller;
@@ -17,8 +18,10 @@ class _NcdFormState extends State<NcdForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("NCD Screening",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        const Text(
+          "NCD Screening",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
 
         const SizedBox(height: 16),
         _metricCard(
@@ -118,18 +121,56 @@ class _NcdFormState extends State<NcdForm> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(12)),
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: const Row(
               children: [
                 Icon(Icons.warning, color: Colors.red),
                 SizedBox(width: 8),
-                Text("Critical values detected",
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.bold)),
+                Text(
+                  "Critical values detected",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
+
+        const SizedBox(height: 20),
+
+        // ===== PREDICT BUTTON =====
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.analytics),
+            label: const Text("Calculate NCD Risk"),
+            onPressed: () {
+              final prediction = c.calculateRisk();
+
+              if (prediction == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content:
+                    Text("Please enter at least some NCD details."),
+                  ),
+                );
+                return;
+              }
+
+              // Refresh to update critical banner if risk is high
+              setState(() {});
+
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => NcdResultPage(result: prediction),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -149,47 +190,61 @@ class _NcdFormState extends State<NcdForm> {
     );
   }
 
-  Widget _metricCard(
-      {required String title,
-        required IconData icon,
-        required List<Widget> children}) {
+  Widget _metricCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(12)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(
-          children: [
-            Icon(icon, color: Color(0xFF2A5A9E)),
-            const SizedBox(width: 8),
-            Text(title,
-                style:
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
-        ),
-        const Divider(height: 24),
-        ...children,
-      ]),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color(0xFF2A5A9E)),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          ...children,
+        ],
+      ),
     );
   }
 
-  Widget _switchTile(
-      {required String title,
-        required bool value,
-        required Function(bool) onChanged}) {
+  Widget _switchTile({
+    required String title,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [Text(title), Switch(value: value, onChanged: onChanged)],
     );
   }
 
-  Widget _choiceChip(
-      {required String label,
-        required bool selected,
-        required VoidCallback onSelected}) {
+  Widget _choiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onSelected,
+  }) {
     return ChoiceChip(
-      label: Text(label,
-          style: TextStyle(color: selected ? Colors.white : Colors.black)),
+      label: Text(
+        label,
+        style: TextStyle(color: selected ? Colors.white : Colors.black),
+      ),
       selected: selected,
       selectedColor: const Color(0xFF2A5A9E),
       onSelected: (_) => onSelected(),

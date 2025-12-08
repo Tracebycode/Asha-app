@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/ml/tb_risk_engine.dart';
+import 'package:asha_frontend/features/tb/ui/tb_result_page.dart';
 import 'package:asha_frontend/features/tb/state/tb_controller.dart';
 
 class TbForm extends StatefulWidget {
@@ -17,16 +19,21 @@ class _TbFormState extends State<TbForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         // ---------------- COUGH --------------------
-        const Text('Does the patient have a cough?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Does the patient have a cough?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         _yesNo(c.hasCough, (v) => setState(() => c.hasCough = v)),
 
         if (c.hasCough == true) ...[
           const SizedBox(height: 12),
-          _textField("Cough Duration", c.coughDuration,
-              icon: Icons.timer, type: TextInputType.number),
+          _textField(
+            "Cough Duration",
+            c.coughDuration,
+            icon: Icons.timer,
+            type: TextInputType.number,
+          ),
 
           const SizedBox(height: 8),
           Row(
@@ -35,7 +42,12 @@ class _TbFormState extends State<TbForm> {
               DropdownButton<String>(
                 value: c.coughDurationUnit,
                 items: ["Days", "Weeks"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .map(
+                      (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e),
+                  ),
+                )
                     .toList(),
                 onChanged: (v) => setState(() => c.coughDurationUnit = v!),
               ),
@@ -52,14 +64,20 @@ class _TbFormState extends State<TbForm> {
         const Divider(height: 32),
 
         // ---------------- FEVER --------------------
-        const Text('Does the patient have a fever?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Does the patient have a fever?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         _yesNo(c.hasFever, (v) => setState(() => c.hasFever = v)),
 
         if (c.hasFever == true) ...[
           const SizedBox(height: 12),
-          _textField("Fever Duration", c.feverDuration,
-              icon: Icons.timer, type: TextInputType.number),
+          _textField(
+            "Fever Duration",
+            c.feverDuration,
+            icon: Icons.timer,
+            type: TextInputType.number,
+          ),
 
           const SizedBox(height: 8),
           Row(
@@ -68,7 +86,12 @@ class _TbFormState extends State<TbForm> {
               DropdownButton<String>(
                 value: c.feverDurationUnit,
                 items: ["Days", "Weeks", "Months"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .map(
+                      (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e),
+                  ),
+                )
                     .toList(),
                 onChanged: (v) => setState(() => c.feverDurationUnit = v!),
               ),
@@ -85,14 +108,20 @@ class _TbFormState extends State<TbForm> {
         const Divider(height: 32),
 
         // ---------------- WEIGHT LOSS --------------------
-        const Text('Unintentional weight loss?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Unintentional weight loss?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         _yesNo(c.hasWeightLoss, (v) => setState(() => c.hasWeightLoss = v)),
 
         if (c.hasWeightLoss == true) ...[
           const SizedBox(height: 12),
-          _textField("Weight Loss (kg)", c.weightLossAmount,
-              icon: Icons.scale, type: TextInputType.number),
+          _textField(
+            "Weight Loss (kg)",
+            c.weightLossAmount,
+            icon: Icons.scale,
+            type: TextInputType.number,
+          ),
 
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
@@ -101,7 +130,14 @@ class _TbFormState extends State<TbForm> {
               "Last 2 weeks",
               "Last month",
               "Last 3 months",
-            ].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+            ]
+                .map(
+                  (v) => DropdownMenuItem(
+                value: v,
+                child: Text(v),
+              ),
+            )
+                .toList(),
             onChanged: (v) => setState(() => c.weightLossPeriod = v!),
           ),
         ],
@@ -109,26 +145,34 @@ class _TbFormState extends State<TbForm> {
         const Divider(height: 32),
 
         // ---------------- CHEST PAIN --------------------
-        const Text('Chest pain?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Chest pain?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         _yesNo(c.hasChestPain, (v) => setState(() => c.hasChestPain = v)),
 
         const Divider(height: 32),
 
         // ---------------- TB EXPOSURE --------------------
-        const Text('Any TB patient at home?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        _yesNo(c.hasTbPatientAtHome,
-                (v) => setState(() => c.hasTbPatientAtHome = v)),
+        const Text(
+          'Any TB patient at home?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        _yesNo(
+          c.hasTbPatientAtHome,
+              (v) => setState(() => c.hasTbPatientAtHome = v),
+        ),
 
         const SizedBox(height: 12),
-        const Text('Had TB in the past?',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Had TB in the past?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         _yesNo(c.hadTbInPast, (v) => setState(() => c.hadTbInPast = v)),
 
         const SizedBox(height: 24),
 
-        // ---------------- CRITICAL --------------------
+        // ---------------- CRITICAL BANNER --------------------
         if (c.isCritical)
           Container(
             padding: const EdgeInsets.all(16),
@@ -141,12 +185,50 @@ class _TbFormState extends State<TbForm> {
                 Icon(Icons.warning, color: Colors.red),
                 SizedBox(width: 8),
                 Expanded(
-                    child: Text("⚠ Critical Symptoms Detected",
-                        style: TextStyle(
-                            color: Colors.red, fontWeight: FontWeight.bold))),
+                  child: Text(
+                    "⚠ Critical Symptoms Detected",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+
+        const SizedBox(height: 24),
+
+        // ---------------- PREDICT BUTTON --------------------
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.analytics),
+            label: const Text("Calculate TB Risk"),
+            onPressed: () {
+              final prediction = c.calculateRisk();
+
+              if (prediction == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content:
+                    Text("Please fill at least some TB screening details."),
+                  ),
+                );
+                return;
+              }
+
+              // Rebuild to refresh c.isCritical banner if needed
+              setState(() {});
+
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => TbResultPage(result: prediction),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -191,8 +273,12 @@ class _TbFormState extends State<TbForm> {
     );
   }
 
-  Widget _textField(String label, TextEditingController c,
-      {IconData? icon, TextInputType? type}) {
+  Widget _textField(
+      String label,
+      TextEditingController c, {
+        IconData? icon,
+        TextInputType? type,
+      }) {
     return TextFormField(
       controller: c,
       keyboardType: type,
