@@ -253,7 +253,11 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   Future<void> _onAddMemberPressed() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const AddMemberPage()),
+      MaterialPageRoute(
+        builder: (_) => AddMemberPage(
+          isFirstMember: _members.isEmpty,   // ⭐ THIS IS THE KEY FIX
+        ),
+      ),
     );
 
     if (result != null) {
@@ -273,6 +277,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       });
     }
   }
+
 
   // EDIT MEMBER
   Future<void> _onEditMemberPressed(int index) async {

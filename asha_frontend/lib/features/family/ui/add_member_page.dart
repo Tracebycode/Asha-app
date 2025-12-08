@@ -19,8 +19,13 @@ import 'package:asha_frontend/features/general/state/general_survey_controller.d
 
 class AddMemberPage extends StatefulWidget {
   final Map<String, dynamic>? existingMember;
+  final bool isFirstMember; // ⭐ NEW PARAM
 
-  const AddMemberPage({super.key, this.existingMember});
+  const AddMemberPage({
+    super.key,
+    this.existingMember,
+    this.isFirstMember = false,
+  });
 
   @override
   State<AddMemberPage> createState() => _AddMemberPageState();
@@ -54,9 +59,12 @@ class _AddMemberPageState extends State<AddMemberPage> {
 
   @override
   void initState() {
+
+
     super.initState();
 
     if (widget.existingMember != null) {
+      // EDIT MODE
       final m = widget.existingMember!;
 
       _name.text = m["name"] ?? "";
@@ -65,7 +73,6 @@ class _AddMemberPageState extends State<AddMemberPage> {
       _relation = m["relation"];
       _aadhaar.text = m["aadhaar"] ?? "";
       _phone.text = m["phone"] ?? "";
-
 
       if (m["healthCases"] != null) {
         _selectedHealthCases = List<String>.from(m["healthCases"]);
@@ -80,6 +87,12 @@ class _AddMemberPageState extends State<AddMemberPage> {
         if (hd["NCD Screening"] != null) ncdController.loadFromMap(hd["NCD Screening"]);
         if (hd["General Survey"] != null) generalController.loadFromMap(hd["General Survey"]);
       }
+
+    } else {
+      // ADDING NEW MEMBER
+      if (widget.isFirstMember) {
+        _relation = "Head"; // ⭐ FIRST MEMBER DEFAULT = HEAD
+      }
     }
   }
 
@@ -92,7 +105,6 @@ class _AddMemberPageState extends State<AddMemberPage> {
     super.dispose();
   }
 
-  // CASE VALIDATION
   bool _isCaseAllowed(String caseName) {
     final int age = int.tryParse(_age.text.trim()) ?? 0;
     final String gender = _gender ?? "";
@@ -106,14 +118,17 @@ class _AddMemberPageState extends State<AddMemberPage> {
     return true;
   }
 
-  // SAVE MEMBER
   void _saveMember() {
     if (!_formKey.currentState!.validate()) {
       print("❌ Validation failed");
       return;
     }
 
-    // --- BUILD HEALTH DETAILS MAP ---
+    // ⭐ FORCE HEAD IF FIRST MEMBER (FAILSAFE FIX)
+    if (_relation == null && widget.isFirstMember) {
+      _relation = "Head";
+    }
+
     final Map<String, dynamic> healthDetails = {};
 
     if (_selectedHealthCases.contains("ANC")) {
@@ -132,12 +147,11 @@ class _AddMemberPageState extends State<AddMemberPage> {
       healthDetails["General Survey"] = generalController.toMap();
     }
 
-    // --- PACK FINAL DATA ---
     final Map<String, dynamic> data = {
       "name": _name.text.trim(),
       "age": int.tryParse(_age.text.trim()) ?? 0,
       "gender": _gender,
-      "relation": _relation,
+      "relation": _relation,  // ✔ Now NEVER NULL for first member
       "aadhaar": _aadhaar.text.trim(),
       "phone": _phone.text.trim(),
       "healthCases": List<String>.from(_selectedHealthCases),
@@ -148,6 +162,7 @@ class _AddMemberPageState extends State<AddMemberPage> {
 
     Navigator.pop(context, data);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +184,6 @@ class _AddMemberPageState extends State<AddMemberPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // BASIC INFO
               const SectionTitle(title: "Basic Information"),
               const SizedBox(height: 12),
 
@@ -221,25 +235,36 @@ class _AddMemberPageState extends State<AddMemberPage> {
 
               const SizedBox(height: 12),
 
-              AppDropdown(
-                label: "Relation",
-                value: _relation,
-                items: const [
-                  "Head",
-                  "Wife",
-                  "Husband",
-                  "Son",
-                  "Daughter",
-                  "Mother",
-                  "Father",
-                  "Other",
-                ],
-                onChanged: (v) => setState(() => _relation = v),
+              IgnorePointer(
+                ignoring: (widget.isFirstMember && widget.existingMember == null), // 🔥 disabled
+                child: Opacity(
+                  opacity: (widget.isFirstMember && widget.existingMember == null) ? 0.6 : 1,
+                  child: AppDropdown(
+                    label: "Relation",
+                    value: _relation,
+                    items: const [
+                      "Head",
+                      "Wife",
+                      "Husband",
+                      "Son",
+                      "Daughter",
+                      "Mother",
+                      "Father",
+                      "Other",
+                    ],
+                    onChanged: (v) {
+                      if (!(widget.isFirstMember && widget.existingMember == null)) {
+                        setState(() => _relation = v);
+                      }
+                    },
+                  ),
+                ),
               ),
+
+
 
               const SizedBox(height: 20),
 
-              // HEALTH CASE SELECTION
               const SectionTitle(title: "Health Cases"),
               const SizedBox(height: 12),
 
@@ -299,7 +324,6 @@ class _AddMemberPageState extends State<AddMemberPage> {
 
               const SizedBox(height: 20),
 
-              // HEALTH CASE CARDS
               if (_selectedHealthCases.isNotEmpty)
                 Column(
                   children: _selectedHealthCases.map((caseName) {
@@ -327,8 +351,10 @@ class _AddMemberPageState extends State<AddMemberPage> {
 
                               Row(
                                 children: [
-                                  Icon(Icons.medical_information_outlined,
-                                      color: isExpanded ? const Color(0xFF2A5A9E) : Colors.grey),
+                                  Icon(
+                                    Icons.medical_information_outlined,
+                                    color: isExpanded ? const Color(0xFF2A5A9E) : Colors.grey,
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
@@ -340,28 +366,18 @@ class _AddMemberPageState extends State<AddMemberPage> {
                                     ),
                                   ),
                                   if (isSaved)
-                                    const Icon(Icons.check_circle,
-                                        color: Colors.green),
+                                    const Icon(Icons.check_circle, color: Colors.green),
                                 ],
                               ),
 
                               if (isExpanded) ...[
                                 const SizedBox(height: 12),
 
-                                if (caseName == "ANC")
-                                  AncForm(controller: ancController),
-
-                                if (caseName == "PNC")
-                                  PncForm(controller: pncController),
-
-                                if (caseName == "TB Screening")
-                                  TbForm(controller: tbController),
-
-                                if (caseName == "NCD Screening")
-                                  NcdForm(controller: ncdController),
-
-                                if (caseName == "General Survey")
-                                  GeneralSurveyForm(controller: generalController),
+                                if (caseName == "ANC") AncForm(controller: ancController),
+                                if (caseName == "PNC") PncForm(controller: pncController),
+                                if (caseName == "TB Screening") TbForm(controller: tbController),
+                                if (caseName == "NCD Screening") NcdForm(controller: ncdController),
+                                if (caseName == "General Survey") GeneralSurveyForm(controller: generalController),
 
                                 const SizedBox(height: 12),
 
