@@ -22,6 +22,18 @@
   "age": "Age",
   "gender": "Gender",
   "save": "Save",
+  "settings": "Settings",
+  "logout": "Logout",
+  "unknown_asha": "Unknown ASHA Worker",
+  "no_area": "No area assigned",
+
+  "pending_count": "Pending Surveys",
+
+  "completed_count": "Completed Surveys",
+
+  "new_task": "New Task Assigned",
+
+  "change_language": "Change Language",
 
   "add_family": "Add Family",
   "edit_family": "Edit Family",
@@ -34,7 +46,17 @@
   "village_name": "Village Name",
   "district_name": "District",
   "state_name": "State",
-
+  "existing_families": "Existing Families",
+  "online_families": "Online Families",
+  "offline_families": "Offline Families",
+  "search_hint": "Search by head name or address...",
+  "could_not_load_online": "Could not load online family list.",
+  "retry": "Retry",
+  "no_online_families": "No online families available.",
+  "no_offline_families": "No offline families saved.",
+  "no_match": "No matching families found.",
+  "no_head_name": "No head name",
+  "no_mumbers_yet": "NO member yet",
   "member_details": "Member Details",
   "add_member": "Add Member",
   "remove_member": "Remove Member",
@@ -44,6 +66,24 @@
   "male": "Male",
   "female": "Female",
   "other": "Other",
+  "member_add_title": "Add Member",
+  "member_edit_title": "Edit Member",
+
+  "member_basic_info": "Basic Information",
+
+  "member_age": "Age",
+  "member_gender": "Gender",
+  "member_aadhaar": "Aadhaar Number",
+  "member_phone": "Phone Number",
+  "member_relation": "Relation in Family",
+
+  "member_health_cases": "Health Cases",
+  "member_select_health_case": "Select Health Case",
+  "member_add_case_btn": "Add",
+  "member_save_case_btn": "Save Health Case",
+
+  "member_save_btn": "Save Member",
+  "member_update_btn": "Update Member",
 
   "save_family": "Save Family",
   "cancel": "Cancel",
@@ -54,6 +94,71 @@
   "error_invalid_mobile": "Please enter a valid mobile number",
   "error_invalid_aadhaar": "Please enter a valid Aadhaar number",
   "error_invalid_age": "Please enter a valid age",
+
+
+  "member_case_anc": "ANC",
+  "member_case_pnc": "PNC",
+  "member_case_immunization": "Immunization",
+  "member_case_ncd": "NCD Screening",
+  "member_case_tb": "TB Screening",
+  "member_case_general": "General Survey",
+
+  "relation_head": "Head",
+  "relation_wife": "Wife",
+  "relation_husband": "Husband",
+  "relation_son": "Son",
+  "relation_daughter": "Daughter",
+  "relation_mother": "Mother",
+  "relation_father": "Father",
+  "relation_other": "Other",
+
+  "gender_male": "Male",
+  "gender_female": "Female",
+  "gender_other": "Other",
+
+  "error_invalid_name": "Please enter a valid name",
+
+  "error_invalid_phone": "Please enter a valid phone number",
+
+
+  "case_not_allowed_age": "This case is not allowed for selected age",
+  "case_not_allowed_gender": "This case is not allowed for selected gender",
+
+
+  "offline": "ऑफलाइन",
+
+
+
+
+  "start_survey": "सर्वेक्षण सुरू करा",
+
+  "update": "अपडेट करा",
+  "delete": "हटवा",
+  "confirm_delete": "आपण खरंच हटवू इच्छिता?",
+  "yes": "होय",
+  "no": "नाही",
+
+  "members": "सदस्य",
+
+  "mobile": "मोबाईल नंबर",
+
+  "sync_start": "सिंक सुरू करत आहे...",
+  "syncing_families": "कुटुंब माहिती समक्रमित करत आहे…",
+  "syncing_members": "सदस्य माहिती समक्रमित करत आहे…",
+  "syncing_health_records": "आरोग्य नोंदी समक्रमित करत आहे…",
+
+  "loading": "लोड होत आहे...",
+  "please_wait": "कृपया थांबा",
+
+  "profile": "प्रोफाइल",
+
+
+  "english": "इंग्रजी",
+  "marathi": "मराठी",
+  "hindi": "हिंदी",
+
+
+
 
   "edit_member": "Edit Member",
   "basic_information": "Basic Information",
@@ -91,6 +196,7 @@
   "critical_detected": "Critical values detected!",
   "enter_ncd_details": "Please enter at least some NCD details.",
   "ncd_result_title": "NCD Screening Result",
+  "risk_score": "Risk Score",
 
   "ncd_identified_risks": "Identified Risk Factors",
   "ncd_no_risk_found": "No major risk factors identified",
@@ -126,6 +232,13 @@
   "tb_last_2_weeks": "Last 2 weeks",
   "tb_last_month": "Last month",
   "tb_last_3_months": "Last 3 months",
+  "start_new_survey": "Start New Survey",
+  "select_existing_family": "Select Existing Family",
+  "select_existing_family_sub": "Choose a family already registered",
+  "add_new_family": "Add New Family",
+  "add_new_family_sub": "Register a new family for survey",
+  "view_survey_tasks": "View Survey Tasks",
+  "view_survey_tasks_sub": "Check today's assigned survey tasks",
 
   "tb_chest_pain": "Chest pain?",
   "tb_patient_at_home": "Any TB patient at home?",
@@ -134,250 +247,6 @@
   "tb_critical_detected": "⚠ Critical Symptoms Detected",
 
   "tb_calculate_risk": "Calculate TB Risk",
-  "tb_fill_details": "Please fill at least some TB screening details.",
-
-  "login_appbar_title": "ASHA Health Data Collector",
-  "login_title": "Login",
-  "login_subtitle": "Enter your details to proceed.",
-  "password": "Password",
-  "login_mobile_hint": "Enter 10-digit number",
-  "login_password_hint": "Enter your password",
-  "login_button": "Login",
-  "login_invalid_credentials": "Invalid mobile or password. Try again.",
-  "error_prefix": "Error: ",
-
-  "mother_details": "Mother's Details",
-  "gravida": "Gravida",
-  "para": "Para",
-  "living": "Living Children",
-  "abortions": "Abortions",
-  "lmp": "Last Menstrual Period (LMP)",
-  "auto_calculated": "EDD will be auto-calculated",
-
-  "bp_label": "Blood Pressure",
-  "bp_hint": "Enter BP as Systolic/Diastolic (e.g. 120/80)",
-
-  "weight_label": "Weight",
-  "weight_hint": "Enter weight in kg",
-
-  "hemoglobin_label": "Hemoglobin",
-  "hemoglobin_hint": "Enter hemoglobin (g/dL)",
-
-  "sugar_label": "Blood Sugar",
-  "sugar_hint": "Enter blood sugar (mg/dL)",
-
-  "current_symptoms": "Current Symptoms",
-
-  "prev_cesarean": "Previous cesarean section?",
-  "prev_stillbirth": "Previous stillbirth?",
-  "prev_complications": "Previous pregnancy complications?",
-
-  "calculate_risk": "Calculate Risk",
-  "select_date": "Select date",
-
-  "bleeding": "Bleeding",
-  "severe_headache": "Severe headache",
-  "swelling": "Swelling",
-  "blurred_vision": "Blurred vision",
-  "fever": "Fever",
-  "convulsions": "Convulsions",
-
-  "anc_risk_result_title": "ANC Risk Result",
-  "risk_score": "Risk Score",
-  "identified_problems": "Identified Problems",
-  "suggestions": "Suggestions",
-
-  "risk_low": "Low Risk",
-  "risk_moderate": "Moderate Risk",
-  "risk_high": "High Risk",
-
-  "family_basic_details": "Family Basic Details",
-  "landmark": "Landmark / Nearby place",
-  "family_members": "Family Members",
-  "no_members_yet": "No members added yet",
-
-  "update_family_basics": "Update family details",
-  "save_family_basics": "Save family details",
-  "save_entire_family": "Save entire family",
-
-  "family_basics_updated": "Family details updated",
-  "family_basics_saved": "Family details saved",
-  "save_basics_first": "Please save family basic details first",
-  "add_member_first": "Please add at least one member before saving",
-  "family_saved": "Family saved successfully",
-
-  "relation_head": "Head",
-  "relation_wife": "Wife",
-  "relation_husband": "Husband",
-  "relation_son": "Son",
-  "relation_daughter": "Daughter",
-  "relation_mother": "Mother",
-  "relation_father": "Father",
-  "relation_other": "Other",
-
-  "health_case_anc": "ANC",
-  "health_case_pnc": "PNC",
-  "health_case_immunization": "Immunization",
-  "health_case_ncd_screening": "NCD Screening",
-  "health_case_tb_screening": "TB Screening",
-  "health_case_general_survey": "General Survey",
-
-  "general_household_survey": "General Household Survey",
-
-  "household_condition": "Household Condition",
-  "house_clean": "House is clean",
-  "safe_drinking_water": "Safe drinking water available",
-  "toilet_available": "Toilet available in house",
-  "proper_waste_disposal": "Proper waste disposal system",
-
-  "members_present": "Members Present",
-  "pregnant_woman_present": "Pregnant woman present",
-  "newborn_present": "Newborn present",
-  "elderly_present": "Elderly person present",
-
-  "symptoms_select_all": "Symptoms (select all that apply)",
-
-  "vitals_if_measured": "Vitals (if measured)",
-  "temperature_f": "Temperature (°F)",
-  "weight_kg": "Weight (kg)",
-  "bp_example": "Blood Pressure (e.g. 120/80)",
-
-  "general_notes": "General Notes",
-  "any_observations": "Any observations or remarks?",
-
-  "critical_case_detected": "⚠ Critical case detected",
-
-  "daily_survey": "Daily Survey",
-  "daily_survey_placeholder": "Daily survey module coming soon",
-
-  "existing_families": "Existing Families",
-  "online_families": "Online Families",
-  "offline_families": "Offline Families",
-
-  "search_hint": "Search by head name or address",
-
-  "could_not_load_online": "Could not load online families. Please try again.",
-  "retry": "Retry",
-
-  "no_online_families": "No online families available",
-  "no_offline_families": "No offline families saved on this device",
-  "no_match": "No families match your search",
-  "no_head_name": "No head name available",
-
-  "start_new_survey": "Start New Survey",
-
-  "select_existing_family": "Select Existing Family",
-  "select_existing_family_sub": "Choose a family already registered in the system",
-
-  "add_new_family": "Add New Family",
-  "add_new_family_sub": "Create a new family record before starting surveys",
-
-  "view_survey_tasks": "View Survey Tasks",
-  "view_survey_tasks_sub": "See assigned or pending survey tasks for today",
-
-  "pnc_mother_check_title": "Post-Natal Survey: Mother Check",
-  "pnc_checkup_date": "Date of checkup",
-
-  "pnc_vital_signs": "Vital Signs",
-  "pnc_bp_label": "Blood Pressure",
-  "pnc_bp_hint": "e.g. 120/80",
-  "pnc_pulse_rate": "Pulse Rate",
-  "pnc_pulse_hint": "e.g. 72",
-
-  "pnc_physical_assessment": "Physical Assessment",
-  "pnc_excessive_bleeding_q": "Signs of excessive bleeding?",
-  "pnc_breast_health_normal_q": "Breast health normal?",
-
-  "pnc_mother_feeling_q": "How is the mother feeling?",
-  "pnc_feeling_happy": "Happy",
-  "pnc_feeling_neutral": "Neutral",
-  "pnc_feeling_sad": "Sad",
-
-  "pnc_baby_check_title": "Post-Natal Survey: Baby Check",
-  "pnc_baby_weight": "Baby Weight (kg)",
-  "pnc_baby_weight_hint": "kg",
-  "pnc_baby_temp": "Temperature (°C)",
-  "pnc_baby_temp_hint": "°C",
-
-  "pnc_general_condition": "General Condition",
-  "pnc_baby_active_q": "Is baby active?",
-  "pnc_baby_active": "Active",
-  "pnc_baby_lethargic": "Lethargic",
-  "pnc_breathing_status": "Breathing status",
-  "pnc_breathing_normal": "Normal",
-  "pnc_breathing_fast": "Fast",
-  "pnc_skin_color": "Skin color",
-  "pnc_skin_normal": "Normal",
-  "pnc_skin_jaundiced": "Jaundiced",
-
-  "pnc_feeding_assessment": "Feeding Assessment",
-  "pnc_breastfeeding_q": "Breastfeeding?",
-  "pnc_good_attachment_q": "Good attachment?",
-
-  "pnc_mother_ds_title": "Mother's Danger Signs",
-  "pnc_mother_ds_fever": "Fever",
-  "pnc_mother_ds_severe_bleeding": "Severe Bleeding",
-  "pnc_mother_ds_foul_discharge": "Foul-smelling Discharge",
-  "pnc_mother_ds_severe_headache": "Severe Headache",
-  "pnc_mother_ds_convulsions": "Convulsions",
-
-  "pnc_baby_ds_title": "Baby's Danger Signs",
-  "pnc_baby_ds_difficulty_breathing": "Difficulty Breathing",
-  "pnc_baby_ds_temp_abnormal": "High/Low Temperature",
-  "pnc_baby_ds_not_feeding_well": "Not Feeding Well",
-  "pnc_baby_ds_jaundiced": "Yellow Skin/Eyes",
-
-  "pnc_notes_optional": "Notes (Optional)",
-  "pnc_notes_hint": "Add notes...",
-
-  "pnc_followup_details": "Follow-up Details",
-  "pnc_followup_date": "Follow up date",
-  "pnc_followup_time": "Follow-up time",
-  "pnc_complications_observed_q": "Any complications observed?",
-  "pnc_followup_bp": "Follow-up BP",
-
-  "pnc_newborn_health": "Newborn’s Health",
-  "pnc_immunizations_up_to_date_q": "Immunizations up to date?",
-  "pnc_newborn_weight": "Weight (kg)",
-  "pnc_newborn_weight_hint": "3.1",
-
-  "pnc_calculate_risk": "Calculate PNC Risk",
-
-  "pnc_risk_result_title": "PNC Risk Result",
-  "pnc_identified_risk_factors": "Identified Risk Factors",
-  "pnc_no_major_problems": "No major problems detected",
-  "pnc_recommended_actions": "Recommended Actions",
-  "pnc_no_suggestions": "No suggestions available",
-
-  "yes": "Yes",
-  "no": "No",
-
-  "tb_screening_result_title": "TB Screening Result",
-  "tb_identified_risk_factors": "Identified Risk Factors",
-  "tb_no_major_symptoms": "No major symptoms reported",
-  "tb_recommended_actions": "Recommended Actions",
-  "tb_no_suggestions": "No suggestions available",
-
-  "tb_risk_low": "Low TB Risk",
-  "tb_risk_moderate": "Moderate TB Risk",
-  "tb_risk_high": "High TB Risk",
-
-  "tb_problem_prolonged_cough_2w": "Cough lasting 2 weeks or more",
-  "tb_problem_prolonged_cough_3w": "Cough lasting 3 weeks or more",
-  "tb_problem_hemoptysis": "Coughing up blood in sputum",
-  "tb_problem_persistent_fever": "Persistent fever for 7 days or more",
-  "tb_problem_continuous_fever": "Continuous fever pattern",
-  "tb_problem_weight_loss": "Unintentional weight loss",
-  "tb_problem_significant_weight_loss": "Significant weight loss (≥ 3 kg)",
-  "tb_problem_recent_weight_loss": "Recent weight loss in last few weeks",
-  "tb_problem_chest_pain_with_cough": "Chest pain associated with cough",
-  "tb_problem_tb_contact": "Close contact with a TB patient at home",
-  "tb_problem_past_tb_history": "History of TB in the past",
-
-  "tb_suggest_regular_followup": "Continue regular follow-up and monitor symptoms.",
-  "tb_suggest_urgent_referral": "Urgent referral to PHC/doctor for TB evaluation.",
-  "tb_suggest_sputum_test": "Advise sputum examination / CBNAAT as per protocol.",
-  "tb_suggest_medical_evaluation": "Advise medical evaluation for persistent fever and symptoms.",
-  "tb_suggest_nutrition_and_screening": "Counsel on nutrition and assess for underlying TB or other causes.",
-  "tb_suggest_contact_tracing_and_testing": "Screen family members and close contacts for TB."
+  "tb_fill_details": "Please fill at least some TB screening details."
 }
+
