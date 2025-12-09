@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 import 'package:asha_frontend/features/family/ui/widgets/common_form_widgets.dart';
 
 class HeadForm extends StatelessWidget {
@@ -8,7 +9,6 @@ class HeadForm extends StatelessWidget {
   final TextEditingController phoneController;
   final TextEditingController aadhaarController;
   final TextEditingController landmarkController;
-
 
   final String? gender;
   final ValueChanged<String?> onGenderChanged;
@@ -27,20 +27,25 @@ class HeadForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle(title: 'Family Head Details'),
+        SectionTitle(title: t("family_head_details")),
         const SizedBox(height: 16),
 
-        AppTextField(label: 'Family Head Name', controller: nameController),
+        AppTextField(
+          label: t("family_head_name"),
+          controller: nameController,
+        ),
         const SizedBox(height: 16),
 
         Row(
           children: [
             Expanded(
               child: AppTextField(
-                label: 'Age',
+                label: t("age"),
                 controller: ageController,
                 keyboardType: TextInputType.number,
               ),
@@ -48,9 +53,9 @@ class HeadForm extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: AppDropdown(
-                label: 'Gender',
+                label: t("gender"),
                 value: gender,
-                items: const ['Male', 'Female', 'Other'],
+                items: [t("male"), t("female"), t("other")],
                 onChanged: onGenderChanged,
               ),
             ),
@@ -58,22 +63,31 @@ class HeadForm extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        AppTextField(label: 'Address', controller: addressController),
-        const SizedBox(height: 16),
-        SizedBox(height: 16),
+
         AppTextField(
-          label: 'Landmark / Reference (e.g., Near Galaxy Gym)',
+          label: t("address"),
+          controller: addressController,
+        ),
+
+        const SizedBox(height: 16),
+
+        AppTextField(
+          label: t("landmark_reference"),
           controller: landmarkController,
         ),
 
+        const SizedBox(height: 16),
+
         AppTextField(
-          label: 'Mobile Number',
+          label: t("mobile_number"),
           controller: phoneController,
           keyboardType: TextInputType.phone,
         ),
+
         const SizedBox(height: 16),
+
         AppTextField(
-          label: 'Aadhaar Number',
+          label: t("aadhaar_number"),
           controller: aadhaarController,
           keyboardType: TextInputType.number,
         ),

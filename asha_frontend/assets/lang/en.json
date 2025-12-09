@@ -1,0 +1,252 @@
+{
+  "home_title": "ASHA Health Tracker",
+  "sync_completed": "Sync Completed",
+  "online": "Online",
+  "new_survey": "New Survey",
+  "new_survey_desc": "Start new data collection",
+  "pending": "Pending",
+  "completed": "Completed",
+  "households": "Households",
+  "view_families": "View all families",
+  "sync_data": "Sync Data",
+  "last_sync": "Last: 10:30 AM",
+  "risk_alerts": "Risk Alerts",
+  "new_alerts": "2 New Alerts",
+  "tasks_from_supervisor": "Tasks from Supervisor",
+  "one_new_task": "1 New Task",
+  "open_families_test": "Open Families Test",
+
+  "app_title": "ASHA Health System",
+  "family_details": "Family Details",
+  "member_name": "Member Name",
+  "age": "Age",
+  "gender": "Gender",
+  "save": "Save",
+  "settings": "Settings",
+  "logout": "Logout",
+  "unknown_asha": "Unknown ASHA Worker",
+  "no_area": "No area assigned",
+
+  "pending_count": "Pending Surveys",
+
+  "completed_count": "Completed Surveys",
+
+  "new_task": "New Task Assigned",
+
+  "change_language": "Change Language",
+
+  "add_family": "Add Family",
+  "edit_family": "Edit Family",
+  "head_of_family": "Head of Family",
+  "family_head_name": "Family Head Name",
+  "mobile_number": "Mobile Number",
+  "aadhaar_number": "Aadhaar Number",
+  "address": "Address",
+  "pin_code": "PIN Code",
+  "village_name": "Village Name",
+  "district_name": "District",
+  "state_name": "State",
+  "existing_families": "Existing Families",
+  "online_families": "Online Families",
+  "offline_families": "Offline Families",
+  "search_hint": "Search by head name or address...",
+  "could_not_load_online": "Could not load online family list.",
+  "retry": "Retry",
+  "no_online_families": "No online families available.",
+  "no_offline_families": "No offline families saved.",
+  "no_match": "No matching families found.",
+  "no_head_name": "No head name",
+  "no_mumbers_yet": "NO member yet",
+  "member_details": "Member Details",
+  "add_member": "Add Member",
+  "remove_member": "Remove Member",
+  "relation": "Relation",
+  "relation_to_head": "Relation to Head",
+  "select_gender": "Select Gender",
+  "male": "Male",
+  "female": "Female",
+  "other": "Other",
+  "member_add_title": "Add Member",
+  "member_edit_title": "Edit Member",
+
+  "member_basic_info": "Basic Information",
+
+  "member_age": "Age",
+  "member_gender": "Gender",
+  "member_aadhaar": "Aadhaar Number",
+  "member_phone": "Phone Number",
+  "member_relation": "Relation in Family",
+
+  "member_health_cases": "Health Cases",
+  "member_select_health_case": "Select Health Case",
+  "member_add_case_btn": "Add",
+  "member_save_case_btn": "Save Health Case",
+
+  "member_save_btn": "Save Member",
+  "member_update_btn": "Update Member",
+
+  "save_family": "Save Family",
+  "cancel": "Cancel",
+  "next": "Next",
+  "back": "Back",
+
+  "required_field": "This field is required",
+  "error_invalid_mobile": "Please enter a valid mobile number",
+  "error_invalid_aadhaar": "Please enter a valid Aadhaar number",
+  "error_invalid_age": "Please enter a valid age",
+
+
+  "member_case_anc": "ANC",
+  "member_case_pnc": "PNC",
+  "member_case_immunization": "Immunization",
+  "member_case_ncd": "NCD Screening",
+  "member_case_tb": "TB Screening",
+  "member_case_general": "General Survey",
+
+  "relation_head": "Head",
+  "relation_wife": "Wife",
+  "relation_husband": "Husband",
+  "relation_son": "Son",
+  "relation_daughter": "Daughter",
+  "relation_mother": "Mother",
+  "relation_father": "Father",
+  "relation_other": "Other",
+
+  "gender_male": "Male",
+  "gender_female": "Female",
+  "gender_other": "Other",
+
+  "error_invalid_name": "Please enter a valid name",
+
+  "error_invalid_phone": "Please enter a valid phone number",
+
+
+  "case_not_allowed_age": "This case is not allowed for selected age",
+  "case_not_allowed_gender": "This case is not allowed for selected gender",
+
+
+  "offline": "ऑफलाइन",
+
+
+
+
+  "start_survey": "सर्वेक्षण सुरू करा",
+
+  "update": "अपडेट करा",
+  "delete": "हटवा",
+  "confirm_delete": "आपण खरंच हटवू इच्छिता?",
+  "yes": "होय",
+  "no": "नाही",
+
+  "members": "सदस्य",
+
+  "mobile": "मोबाईल नंबर",
+
+  "sync_start": "सिंक सुरू करत आहे...",
+  "syncing_families": "कुटुंब माहिती समक्रमित करत आहे…",
+  "syncing_members": "सदस्य माहिती समक्रमित करत आहे…",
+  "syncing_health_records": "आरोग्य नोंदी समक्रमित करत आहे…",
+
+  "loading": "लोड होत आहे...",
+  "please_wait": "कृपया थांबा",
+
+  "profile": "प्रोफाइल",
+
+
+  "english": "इंग्रजी",
+  "marathi": "मराठी",
+  "hindi": "हिंदी",
+
+
+
+
+  "edit_member": "Edit Member",
+  "basic_information": "Basic Information",
+  "phone_number": "Phone Number",
+  "health_cases": "Health Cases",
+  "select_health_case": "Select Health Case",
+  "add": "Add",
+  "save_health_case": "Save Health Case",
+  "save_member": "Save Member",
+  "update_member": "Update Member",
+  "ncd_screening_title": "NCD Screening",
+  "blood_pressure": "Blood Pressure",
+  "systolic": "Systolic (mmHg)",
+  "diastolic": "Diastolic (mmHg)",
+  "bmi": "BMI",
+  "weight": "Weight (kg)",
+  "height": "Height (cm)",
+  "blood_sugar": "Blood Sugar",
+  "random_blood_sugar": "Random Blood Sugar (mg/dL)",
+  "tobacco_alcohol": "Tobacco & Alcohol",
+  "uses_tobacco": "Uses Tobacco?",
+  "consumes_alcohol": "Consumes Alcohol?",
+  "diet": "Diet",
+  "extra_salt": "How much extra salt do you add?",
+  "none": "None",
+  "little": "A little",
+  "a_lot": "A lot",
+  "physical_activity": "Physical Activity",
+  "exercise_frequency": "Exercise Frequency",
+  "daily": "Daily",
+  "few_times_week": "Few times a week",
+  "rarely": "Rarely",
+  "never": "Never",
+  "calculate_ncd_risk": "Calculate NCD Risk",
+  "critical_detected": "Critical values detected!",
+  "enter_ncd_details": "Please enter at least some NCD details.",
+  "ncd_result_title": "NCD Screening Result",
+  "risk_score": "Risk Score",
+
+  "ncd_identified_risks": "Identified Risk Factors",
+  "ncd_no_risk_found": "No major risk factors identified",
+
+  "ncd_suggestions": "Recommended Actions",
+  "ncd_no_suggestions": "No suggestions available",
+
+  "ncd_risk_low": "Low NCD Risk",
+  "ncd_risk_moderate": "Moderate NCD Risk",
+  "ncd_risk_high": "High NCD Risk",
+  "ncd_problem_high_blood_pressure": "High blood pressure",
+  "ncd_suggest_limit_alcohol": "Limit alcohol use",
+  "tb_cough_question": "Does the patient have a cough?",
+  "tb_cough_duration": "Cough Duration",
+  "tb_unit": "Unit",
+  "tb_days": "Days",
+  "tb_weeks": "Weeks",
+  "tb_months": "Months",
+  "tb_cough_type": "Cough Type",
+  "tb_cough_dry": "Dry",
+  "tb_cough_phlegm": "With Phlegm",
+  "tb_cough_blood": "With Blood",
+
+  "tb_fever_question": "Does the patient have a fever?",
+  "tb_fever_duration": "Fever Duration",
+  "tb_fever_pattern": "Fever Pattern",
+  "tb_fever_continuous": "Continuous",
+  "tb_fever_intermittent": "Intermittent",
+  "tb_fever_remittent": "Remittent",
+
+  "tb_weight_loss_question": "Unintentional weight loss?",
+  "tb_weight_loss_amount": "Weight Loss (kg)",
+  "tb_last_2_weeks": "Last 2 weeks",
+  "tb_last_month": "Last month",
+  "tb_last_3_months": "Last 3 months",
+  "start_new_survey": "Start New Survey",
+  "select_existing_family": "Select Existing Family",
+  "select_existing_family_sub": "Choose a family already registered",
+  "add_new_family": "Add New Family",
+  "add_new_family_sub": "Register a new family for survey",
+  "view_survey_tasks": "View Survey Tasks",
+  "view_survey_tasks_sub": "Check today's assigned survey tasks",
+
+  "tb_chest_pain": "Chest pain?",
+  "tb_patient_at_home": "Any TB patient at home?",
+  "tb_past_tb": "Had TB in the past?",
+
+  "tb_critical_detected": "⚠ Critical Symptoms Detected",
+
+  "tb_calculate_risk": "Calculate TB Risk",
+  "tb_fill_details": "Please fill at least some TB screening details."
+}
+

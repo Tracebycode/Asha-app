@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 import 'package:asha_frontend/features/general/state/general_survey_controller.dart';
 
 class GeneralSurveyForm extends StatefulWidget {
@@ -13,49 +14,51 @@ class _GeneralSurveyFormState extends State<GeneralSurveyForm> {
   @override
   Widget build(BuildContext context) {
     final c = widget.controller;
+    final t = AppLocalization.of(context).t;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "General Household Survey",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          t("general_household_survey"),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
 
         // ------- Household Conditions -------
-        _sectionTitle("Household Condition"),
-        _switchTile("House Clean?", c.houseClean,
+        _sectionTitle(t("household_condition")),
+        _switchTile(t("house_clean"), c.houseClean,
                 (v) => setState(() => c.houseClean = v)),
-        _switchTile("Safe Drinking Water?", c.drinkingWaterSafe,
+        _switchTile(t("safe_drinking_water"), c.drinkingWaterSafe,
                 (v) => setState(() => c.drinkingWaterSafe = v)),
-        _switchTile("Toilet Available?", c.toiletAvailable,
+        _switchTile(t("toilet_available"), c.toiletAvailable,
                 (v) => setState(() => c.toiletAvailable = v)),
-        _switchTile("Proper Waste Disposal?", c.wasteDisposalProper,
+        _switchTile(t("proper_waste_disposal"), c.wasteDisposalProper,
                 (v) => setState(() => c.wasteDisposalProper = v)),
 
         const SizedBox(height: 20),
 
         // ------- Members Present -------
-        _sectionTitle("Members Present"),
-        _switchTile("Pregnant Woman Present?", c.pregnantWomanPresent,
+        _sectionTitle(t("members_present")),
+        _switchTile(t("pregnant_woman_present"), c.pregnantWomanPresent,
                 (v) => setState(() => c.pregnantWomanPresent = v)),
-        _switchTile("Newborn Present?", c.newbornPresent,
+        _switchTile(t("newborn_present"), c.newbornPresent,
                 (v) => setState(() => c.newbornPresent = v)),
-        _switchTile("Elderly Present?", c.elderlyPresent,
+        _switchTile(t("elderly_present"), c.elderlyPresent,
                 (v) => setState(() => c.elderlyPresent = v)),
 
         const SizedBox(height: 20),
 
         // ------- Symptoms -------
-        _sectionTitle("Symptoms (Select all that apply)"),
+        _sectionTitle(t("symptoms_select_all")),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: c.symptomsList.map((sym) {
             final selected = c.symptoms.contains(sym);
+
             return ChoiceChip(
-              label: Text(sym),
+              label: Text(t(sym)), // <-- SYMptoms also localized
               selected: selected,
               selectedColor: Colors.blue,
               onSelected: (v) {
@@ -70,26 +73,25 @@ class _GeneralSurveyFormState extends State<GeneralSurveyForm> {
         const SizedBox(height: 20),
 
         // ------- Vitals -------
-        _sectionTitle("Vitals (if measured)"),
-        _textField("Temperature (°F)", c.tempController),
+        _sectionTitle(t("vitals_if_measured")),
+        _textField(t("temperature_f"), c.tempController),
         const SizedBox(height: 12),
-        _textField("Weight (kg)", c.weightController),
+        _textField(t("weight_kg"), c.weightController),
         const SizedBox(height: 12),
-        _textField("BP (e.g., 120/80)", c.bpController),
+        _textField(t("bp_example"), c.bpController),
 
         const SizedBox(height: 20),
 
         // ------- Notes -------
-        _sectionTitle("General Notes"),
+        _sectionTitle(t("general_notes")),
         TextFormField(
           controller: c.notesController,
           maxLines: 3,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: "Any observations...",
-            border:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            hintText: t("any_observations"),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
 
@@ -102,13 +104,17 @@ class _GeneralSurveyFormState extends State<GeneralSurveyForm> {
               color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.warning, color: Colors.red),
-                SizedBox(width: 8),
-                Text("Critical case detected!",
-                    style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                const Icon(Icons.warning, color: Colors.red),
+                const SizedBox(width: 8),
+                Text(
+                  t("critical_case_detected"),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
               ],
             ),
           ),
@@ -120,9 +126,10 @@ class _GeneralSurveyFormState extends State<GeneralSurveyForm> {
 
   Widget _sectionTitle(String title) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: Text(title,
-        style: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.bold)),
+    child: Text(
+      title,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    ),
   );
 
   Widget _switchTile(String label, bool value, ValueChanged<bool> onChanged) {

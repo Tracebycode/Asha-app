@@ -4,6 +4,7 @@ import 'package:asha_frontend/data/local/dao/members_dao.dart';
 import 'package:asha_frontend/data/local/dao/health_records_dao.dart';
 import 'package:asha_frontend/core/services/api_service.dart';
 import 'package:asha_frontend/features/family/ui/add_family_page.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 
 class ExistingFamilyPage extends StatefulWidget {
   const ExistingFamilyPage({super.key});
@@ -33,6 +34,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
   }
 
   Future<void> loadFamilies() async {
+    offlineFamilies = await familiesDao.getAllFamilies();
     // Load only DOWNLOADED families (client_id NOT NULL & synced)
     offlineFamilies = await familiesDao.getDownloadedFamilies();
     setState(() {});
@@ -54,7 +56,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
           .map((f) => f as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      _onlineError = "Could not load online families";
+      final t = AppLocalization.of(context).t;
+      _onlineError = t("could_not_load_online");
       onlineFamilies = [];
     }
 
@@ -64,6 +67,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -86,7 +91,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: "Search by Head Name / Address",
+                  hintText: t("search_hint"),
                   prefixIcon: const Icon(Icons.search),
                   isDense: true,
                   contentPadding:
@@ -102,8 +107,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildOnlineList(),
-                  _buildOfflineList(),
+                  _buildOnlineList(context),
+                  _buildOfflineList(context),
                 ],
               ),
             ),
@@ -130,7 +135,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: loadFamilies,
-              child: const Text("Retry"),
+              child: Text(t("retry")),
             ),
           ],
         ),
@@ -138,7 +143,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     }
 
     if (onlineFamilies.isEmpty) {
-      return const Center(child: Text("No Online Families"));
+      return Center(child: Text(t("no_online_families")));
     }
 
     final filtered = onlineFamilies.where((f) {
@@ -154,7 +159,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
         final fam = filtered[index];
 
         return _familyCard(
-          title: fam["head_name"] ?? "No head name",
+          title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.cloud_download,
           iconColor: Colors.blue,
@@ -254,7 +259,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
         final fam = filtered[index];
 
         return _familyCard(
-          title: fam["head_name"] ?? "No head name",
+          title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.edit,
           iconColor: Colors.green,

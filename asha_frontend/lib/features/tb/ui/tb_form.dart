@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../localization/app_localization.dart';
 import '../../../core/ml/tb_risk_engine.dart';
 import 'package:asha_frontend/features/tb/ui/tb_result_page.dart';
 import 'package:asha_frontend/features/tb/state/tb_controller.dart';
@@ -14,22 +15,23 @@ class TbForm extends StatefulWidget {
 class _TbFormState extends State<TbForm> {
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
     final c = widget.controller;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ---------------- COUGH --------------------
-        const Text(
-          'Does the patient have a cough?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_cough_question"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         _yesNo(c.hasCough, (v) => setState(() => c.hasCough = v)),
 
         if (c.hasCough == true) ...[
           const SizedBox(height: 12),
           _textField(
-            "Cough Duration",
+            t("tb_cough_duration"),
             c.coughDuration,
             icon: Icons.timer,
             type: TextInputType.number,
@@ -38,42 +40,39 @@ class _TbFormState extends State<TbForm> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Text("Unit: "),
+              Text(t("tb_unit")),
+              const SizedBox(width: 8),
               DropdownButton<String>(
                 value: c.coughDurationUnit,
-                items: ["Days", "Weeks"]
-                    .map(
-                      (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(e),
-                  ),
-                )
-                    .toList(),
+                items: [
+                  t("tb_days"),
+                  t("tb_weeks"),
+                ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (v) => setState(() => c.coughDurationUnit = v!),
               ),
             ],
           ),
 
           const SizedBox(height: 12),
-          const Text("Cough Type"),
-          _check("Dry", c.coughTypes),
-          _check("With Phlegm", c.coughTypes),
-          _check("With Blood", c.coughTypes),
+          Text(t("tb_cough_type")),
+          _check(t("tb_cough_dry"), c.coughTypes),
+          _check(t("tb_cough_phlegm"), c.coughTypes),
+          _check(t("tb_cough_blood"), c.coughTypes),
         ],
 
         const Divider(height: 32),
 
         // ---------------- FEVER --------------------
-        const Text(
-          'Does the patient have a fever?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_fever_question"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         _yesNo(c.hasFever, (v) => setState(() => c.hasFever = v)),
 
         if (c.hasFever == true) ...[
           const SizedBox(height: 12),
           _textField(
-            "Fever Duration",
+            t("tb_fever_duration"),
             c.feverDuration,
             icon: Icons.timer,
             type: TextInputType.number,
@@ -82,42 +81,40 @@ class _TbFormState extends State<TbForm> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Text("Unit: "),
+              Text(t("tb_unit")),
+              const SizedBox(width: 8),
               DropdownButton<String>(
                 value: c.feverDurationUnit,
-                items: ["Days", "Weeks", "Months"]
-                    .map(
-                      (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(e),
-                  ),
-                )
-                    .toList(),
+                items: [
+                  t("tb_days"),
+                  t("tb_weeks"),
+                  t("tb_months"),
+                ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (v) => setState(() => c.feverDurationUnit = v!),
               ),
             ],
           ),
 
           const SizedBox(height: 12),
-          const Text("Fever Pattern"),
-          _chip("Continuous", c),
-          _chip("Intermittent", c),
-          _chip("Remittent", c),
+          Text(t("tb_fever_pattern")),
+          _chip(t("tb_fever_continuous"), c),
+          _chip(t("tb_fever_intermittent"), c),
+          _chip(t("tb_fever_remittent"), c),
         ],
 
         const Divider(height: 32),
 
         // ---------------- WEIGHT LOSS --------------------
-        const Text(
-          'Unintentional weight loss?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_weight_loss_question"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         _yesNo(c.hasWeightLoss, (v) => setState(() => c.hasWeightLoss = v)),
 
         if (c.hasWeightLoss == true) ...[
           const SizedBox(height: 12),
           _textField(
-            "Weight Loss (kg)",
+            t("tb_weight_loss_amount"),
             c.weightLossAmount,
             icon: Icons.scale,
             type: TextInputType.number,
@@ -127,17 +124,10 @@ class _TbFormState extends State<TbForm> {
           DropdownButtonFormField<String>(
             value: c.weightLossPeriod,
             items: [
-              "Last 2 weeks",
-              "Last month",
-              "Last 3 months",
-            ]
-                .map(
-                  (v) => DropdownMenuItem(
-                value: v,
-                child: Text(v),
-              ),
-            )
-                .toList(),
+              t("tb_last_2_weeks"),
+              t("tb_last_month"),
+              t("tb_last_3_months"),
+            ].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
             onChanged: (v) => setState(() => c.weightLossPeriod = v!),
           ),
         ],
@@ -145,28 +135,26 @@ class _TbFormState extends State<TbForm> {
         const Divider(height: 32),
 
         // ---------------- CHEST PAIN --------------------
-        const Text(
-          'Chest pain?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_chest_pain"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         _yesNo(c.hasChestPain, (v) => setState(() => c.hasChestPain = v)),
 
         const Divider(height: 32),
 
         // ---------------- TB EXPOSURE --------------------
-        const Text(
-          'Any TB patient at home?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_patient_at_home"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        _yesNo(
-          c.hasTbPatientAtHome,
-              (v) => setState(() => c.hasTbPatientAtHome = v),
-        ),
+        _yesNo(c.hasTbPatientAtHome,
+                (v) => setState(() => c.hasTbPatientAtHome = v)),
 
         const SizedBox(height: 12),
-        const Text(
-          'Had TB in the past?',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Text(
+          t("tb_past_tb"),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         _yesNo(c.hadTbInPast, (v) => setState(() => c.hadTbInPast = v)),
 
@@ -180,14 +168,14 @@ class _TbFormState extends State<TbForm> {
               color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.warning, color: Colors.red),
-                SizedBox(width: 8),
+                const Icon(Icons.warning, color: Colors.red),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "⚠ Critical Symptoms Detected",
-                    style: TextStyle(
+                    t("tb_critical_detected"),
+                    style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
                     ),
@@ -204,22 +192,18 @@ class _TbFormState extends State<TbForm> {
           width: double.infinity,
           child: ElevatedButton.icon(
             icon: const Icon(Icons.analytics),
-            label: const Text("Calculate TB Risk"),
+            label: Text(t("tb_calculate_risk")),
             onPressed: () {
               final prediction = c.calculateRisk();
 
               if (prediction == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                    Text("Please fill at least some TB screening details."),
-                  ),
+                  SnackBar(content: Text(t("tb_fill_details"))),
                 );
                 return;
               }
 
-              // Rebuild to refresh c.isCritical banner if needed
-              setState(() {});
+              setState(() {}); // refresh banner
 
               Navigator.of(context).push(
                 MaterialPageRoute(
