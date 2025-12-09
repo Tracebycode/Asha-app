@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:asha_frontend/data/local/dao/families_dao.dart';
+import 'package:asha_frontend/data/local/dao/members_dao.dart';
+import 'package:asha_frontend/data/local/dao/health_records_dao.dart';
 import 'package:asha_frontend/core/services/api_service.dart';
 import 'package:asha_frontend/features/family/ui/add_family_page.dart';
 import 'package:asha_frontend/localization/app_localization.dart';
@@ -14,6 +16,8 @@ class ExistingFamilyPage extends StatefulWidget {
 class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     with SingleTickerProviderStateMixin {
   final FamiliesDao familiesDao = FamiliesDao();
+  final MembersDao membersDao = MembersDao();
+  final HealthRecordsDao healthDao = HealthRecordsDao();
   final ApiClient api = ApiClient();
 
   List<Map<String, dynamic>> offlineFamilies = [];
@@ -31,6 +35,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
 
   Future<void> loadFamilies() async {
     offlineFamilies = await familiesDao.getAllFamilies();
+    // Load only DOWNLOADED families (client_id NOT NULL & synced)
+    offlineFamilies = await familiesDao.getDownloadedFamilies();
     setState(() {});
 
     _isLoadingOnline = true;
@@ -38,13 +44,13 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     setState(() {});
 
     try {
+      // HIT API /families/list
       final serverList = await api.getOnlineFamilies();
 
-      final localServerIds = offlineFamilies
-          .where((f) => f["client_id"] != null)
-          .map((f) => f["client_id"])
-          .toSet();
+      final localServerIds =
+      offlineFamilies.map((f) => f["client_id"]).toSet();
 
+      // Show only server families that are NOT downloaded
       onlineFamilies = serverList
           .where((f) => !localServerIds.contains(f["id"]))
           .map((f) => f as Map<String, dynamic>)
@@ -67,17 +73,18 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(t("existing_families")),
-          bottom: TabBar(
-            labelColor: Colors.black,
-            unselectedLabelColor: Colors.white,
-            indicatorColor: Colors.black,
+          title: const Text("Existing Families"),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
             tabs: [
-              Tab(text: t("online_families")),
-              Tab(text: t("offline_families")),
+              Tab(text: "Online Families"),
+              Tab(text: "Offline Families"),
             ],
           ),
         ),
+
         body: Column(
           children: [
             Padding(
@@ -96,7 +103,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
                 onChanged: (v) => setState(() => search = v.toLowerCase()),
               ),
             ),
-            const SizedBox(height: 4),
+
             Expanded(
               child: TabBarView(
                 children: [
@@ -111,9 +118,10 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     );
   }
 
-  Widget _buildOnlineList(BuildContext context) {
-    final t = AppLocalization.of(context).t;
-
+  // ---------------------------------------------------
+  // ONLINE FAMILIES
+  // ---------------------------------------------------
+  Widget _buildOnlineList() {
     if (_isLoadingOnline) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -144,41 +152,96 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
       return head.contains(search) || addr.contains(search);
     }).toList();
 
-    if (filtered.isEmpty) {
-      return Center(child: Text(t("no_match")));
-    }
-
     return ListView.builder(
       padding: const EdgeInsets.all(10),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final fam = filtered[index];
+
         return _familyCard(
           title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.cloud_download,
           iconColor: Colors.blue,
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AddFamilyPage(existingFamily: fam),
-              ),
-            );
-            loadFamilies();
-          },
+            onTap: () async {
+              try {
+                // 1️⃣ Show loader safely
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                );
+
+                // 2️⃣ Fetch full family
+                final fullBundle = await api.getFamilyFullBundle(fam["id"]);
+
+                // 3️⃣ Safe casts
+                final family =
+                Map<String, dynamic>.from(fullBundle["family"] ?? {});
+
+                final members = (fullBundle["members"] as List<dynamic>? ?? [])
+                    .map((e) => Map<String, dynamic>.from(e))
+                    .toList();
+
+                final healthRecords =
+                (fullBundle["health_records"] as List<dynamic>? ?? [])
+                    .map((e) => Map<String, dynamic>.from(e))
+                    .toList();
+
+                // 4️⃣ Save offline
+                await familiesDao.saveDownloadedFamilyBundle(
+                  family: family,
+                  members: members,
+                  healthRecords: healthRecords,
+                );
+
+                // 5️⃣ CLOSE LOADER SAFELY
+                if (mounted && Navigator.canPop(context)) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+
+                if (!mounted) return;
+
+                // 6️⃣ Reload offline list
+                await loadFamilies();
+
+                // 7️⃣ Find local family
+                final localList = await familiesDao.getDownloadedFamilies();
+                final local =
+                localList.firstWhere((x) => x["client_id"] == fam["id"]);
+
+                // 8️⃣ Open form for editing
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AddFamilyPage(existingFamily: local),
+                  ),
+                );
+
+                if (!mounted) return;
+                await loadFamilies();
+
+              } catch (e) {
+                // ❗ Ensure loader is closed even if error occurs
+                if (mounted && Navigator.canPop(context)) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+                if (mounted) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("Error: $e")));
+                }
+              }
+            }
+
         );
       },
     );
   }
 
-  Widget _buildOfflineList(BuildContext context) {
-    final t = AppLocalization.of(context).t;
-
-    if (offlineFamilies.isEmpty) {
-      return Center(child: Text(t("no_offline_families")));
-    }
-
+  // ---------------------------------------------------
+  // OFFLINE DOWNLOADED FAMILIES
+  // ---------------------------------------------------
+  Widget _buildOfflineList() {
     final filtered = offlineFamilies.where((f) {
       final head = (f["head_name"] ?? "").toString().toLowerCase();
       final addr = (f["address_line"] ?? "").toString().toLowerCase();
@@ -186,7 +249,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     }).toList();
 
     if (filtered.isEmpty) {
-      return Center(child: Text(t("no_match")));
+      return const Center(child: Text("No Offline Families"));
     }
 
     return ListView.builder(
@@ -194,25 +257,29 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
       itemCount: filtered.length,
       itemBuilder: (context, index) {
         final fam = filtered[index];
+
         return _familyCard(
           title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.edit,
           iconColor: Colors.green,
           onTap: () async {
-            await Navigator.push(
+            Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => AddFamilyPage(existingFamily: fam),
+                builder: (_) =>
+                    AddFamilyPage(existingFamily: fam),
               ),
             );
-            loadFamilies();
           },
         );
       },
     );
   }
 
+  // ---------------------------------------------------
+  // REUSABLE CARD
+  // ---------------------------------------------------
   Widget _familyCard({
     required String title,
     required String subtitle,
