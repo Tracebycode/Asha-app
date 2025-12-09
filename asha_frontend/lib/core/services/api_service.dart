@@ -144,4 +144,23 @@ class ApiClient {
     return result["families"];
   }
 
+  // ------------------------------------------------------
+// GET FULL FAMILY BUNDLE  (/families/:id/full)
+// ------------------------------------------------------
+  Future<Map<String, dynamic>> getFamilyFullBundle(String familyId) async {
+    final headers = await _headers();
+
+    final resp = await http.get(
+      Uri.parse("$baseUrl/families/$familyId/full"),
+      headers: headers,
+    ).timeout(const Duration(seconds: 15));
+
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      return jsonDecode(resp.body);
+    }
+
+    throw Exception("Failed to load family bundle: ${resp.body}");
+  }
+
+
 }

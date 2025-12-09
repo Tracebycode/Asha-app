@@ -2,23 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:asha_frontend/features/home/ui/existing_family_page.dart';
 import 'package:asha_frontend/features/home/ui/daily_survey.dart';
 import 'package:asha_frontend/features/family/ui/add_family_page.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 
 class FamilyDetailsPage extends StatelessWidget {
   const FamilyDetailsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text('Start New Survey'),
+        title: Text(t("start_new_survey")),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black87,
         actions: [
           IconButton(
             icon: const Icon(Icons.wifi_off),
-            onPressed: () { /* TODO */ },
+            onPressed: () {},
           ),
         ],
       ),
@@ -29,8 +32,8 @@ class FamilyDetailsPage extends StatelessWidget {
             _buildListTile(
               context: context,
               icon: Icons.people_outline,
-              title: 'Select Existing Family',
-              subtitle: 'Find and survey a registered family',
+              title: t("select_existing_family"),
+              subtitle: t("select_existing_family_sub"),
               onTap: () {
                 Navigator.push(
                   context,
@@ -42,12 +45,12 @@ class FamilyDetailsPage extends StatelessWidget {
             _buildListTile(
               context: context,
               icon: Icons.person_add_alt_1_outlined,
-              title: 'Add New Family',
-              subtitle: 'Register a new household in your area',
+              title: t("add_new_family"),
+              subtitle: t("add_new_family_sub"),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AddFamilyPage ()),
+                  MaterialPageRoute(builder: (context) => AddFamilyPage()),
                 );
               },
             ),
@@ -55,12 +58,12 @@ class FamilyDetailsPage extends StatelessWidget {
             _buildListTile(
               context: context,
               icon: Icons.rule_sharp,
-              title: 'View Survey Tasks',
-              subtitle: 'Check your pending survey assignments',
+              title: t("view_survey_tasks"),
+              subtitle: t("view_survey_tasks_sub"),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>  DailySurveyPage()),
+                  MaterialPageRoute(builder: (context) => const DailySurveyPage()),
                 );
               },
             ),
@@ -95,5 +98,3 @@ class FamilyDetailsPage extends StatelessWidget {
     );
   }
 }
-
-

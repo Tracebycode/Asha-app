@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 import 'package:asha_frontend/features/family/ui/widgets/common_form_widgets.dart';
 import 'package:asha_frontend/features/family/ui/add_member_page.dart';
 import 'package:asha_frontend/data/local/dao/families_dao.dart';
@@ -33,7 +34,7 @@ class _MemberSummary {
 }
 
 class AddFamilyPage extends StatefulWidget {
-  final Map<String, dynamic>? existingFamily;   // 👈 NEW
+  final Map<String, dynamic>? existingFamily;
 
   const AddFamilyPage({super.key, this.existingFamily});
 
@@ -51,7 +52,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   final List<_MemberSummary> _members = [];
   final FamiliesDao _familiesDao = FamiliesDao();
 
-  String? _familyClientId;   // local family id (id column in DB)
+  String? _familyClientId;
   bool _basicsSaved = false;
   bool _isEditMode = false;
 
@@ -59,22 +60,17 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   void initState() {
     super.initState();
 
-    // 👇 If we came from ExistingFamilyPage with a selected family
     if (widget.existingFamily != null) {
       _isEditMode = true;
-      if (_isEditMode) {
-        _loadExistingMembersAndHealth();
-      }
-
+      if (_isEditMode) _loadExistingMembersAndHealth();
 
       final fam = widget.existingFamily!;
-      _familyClientId = fam["id"]; // LOCAL FAMILY ID from DB
+      _familyClientId = fam["id"];
 
       _addressController.text = fam["address_line"] ?? "";
       _landmarkController.text = fam["landmark"] ?? "";
       _mobileController.text = fam["phone"] ?? "";
 
-      // We already have a family row, so basics are effectively “saved”
       _basicsSaved = true;
     }
   }
@@ -87,7 +83,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     super.dispose();
   }
 
-
   Future<void> _loadExistingMembersAndHealth() async {
     final membersDao = MembersDao();
     final healthDao = HealthRecordsDao();
@@ -99,7 +94,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     for (final m in memberRows) {
       final localMemberId = m["id"];
 
-      // Load all health entries for this member
       final healthRows = await healthDao.getHealthByLocalMemberId(localMemberId);
 
       final List<String> healthCases = [];
@@ -108,7 +102,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       for (final h in healthRows) {
         final visitType = h["visit_type"];
         healthCases.add(visitType);
-
         healthDetails[visitType] = jsonDecode(h["data_json"]);
       }
 
@@ -129,15 +122,14 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     setState(() {});
   }
 
-
-  // SAVE / UPDATE FAMILY BASICS
   void _onSaveFamilyBasics() async {
+    final t = AppLocalization.of(context).t;
+
     if (_formKey.currentState?.validate() != true) return;
 
     final now = DateTime.now().toIso8601String();
 
     if (_isEditMode && _familyClientId != null) {
-      // 🔁 UPDATE EXISTING FAMILY
       final familyUpdate = {
         "address_line": _addressController.text.trim(),
         "landmark": _landmarkController.text.trim(),
@@ -151,13 +143,12 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       await _familiesDao.updateFamily(_familyClientId!, familyUpdate);
       _basicsSaved = true;
     } else {
-      // 🆕 CREATE NEW FAMILY (previous behavior)
       final String localFamilyId = const Uuid().v4();
       _familyClientId = localFamilyId;
 
       final familyData = {
-        "id": localFamilyId,            // LOCAL PK
-        "client_id": null,              // server id after sync
+        "id": localFamilyId,
+        "client_id": null,
 
         "address_line": _addressController.text.trim(),
         "landmark": _landmarkController.text.trim(),
@@ -183,9 +174,7 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _isEditMode
-              ? "Family basics updated."
-              : "Family basics saved. Now add members",
+          _isEditMode ? t("family_basics_updated") : t("family_basics_saved"),
         ),
       ),
     );
@@ -194,16 +183,18 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
   }
 
   Future<void> _onFinalSaveFamily() async {
+    final t = AppLocalization.of(context).t;
+
     if (!_basicsSaved) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Save family basics first")),
+        SnackBar(content: Text(t("save_basics_first"))),
       );
       return;
     }
 
     if (_members.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Add at least one member")),
+        SnackBar(content: Text(t("add_member_first"))),
       );
       return;
     }
@@ -216,7 +207,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     );
 
     for (final m in _members) {
-      // Save member to LOCAL DB
       final localMemberId = await membersRepo.createMember(
         localFamilyId: _familyClientId!,
         member: {
@@ -229,7 +219,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
         },
       );
 
-      // Save health records linked to that member
       for (final hc in m.healthCases) {
         await healthRepo.saveHealthRecord(
           localMemberId: localMemberId,
@@ -239,17 +228,13 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
       }
     }
 
-    print("🎉 FINAL FAMILY + MEMBERS + HEALTH SAVED TO LOCAL DB");
-
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Family saved successfully")),
+      SnackBar(content: Text(t("family_saved"))),
     );
 
     Navigator.pop(context);
   }
 
-
-  // ADD MEMBER
   Future<void> _onAddMemberPressed() async {
     final result = await Navigator.push(
       context,
@@ -274,7 +259,6 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
     }
   }
 
-  // EDIT MEMBER
   Future<void> _onEditMemberPressed(int index) async {
     final m = _members[index];
 
@@ -314,13 +298,16 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Edit Family' : 'Add New Family'),
+        title: Text(_isEditMode ? t("edit_family") : t("add_family")),
         backgroundColor: const Color(0xFF2A5A9E),
         foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.grey[200],
+
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -328,24 +315,25 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionTitle(title: "Family Basic Details"),
+
+              SectionTitle(title: t("family_basic_details")),
               const SizedBox(height: 16),
 
-              AppTextField(label: "Address", controller: _addressController),
+              AppTextField(label: t("address"), controller: _addressController),
               const SizedBox(height: 16),
 
-              AppTextField(label: "Landmark", controller: _landmarkController),
+              AppTextField(label: t("landmark"), controller: _landmarkController),
               const SizedBox(height: 16),
 
               AppTextField(
-                label: "Mobile Number",
+                label: t("mobile_number"),
                 controller: _mobileController,
                 keyboardType: TextInputType.phone,
               ),
 
               const SizedBox(height: 28),
 
-              const SectionTitle(title: "Family Members"),
+              SectionTitle(title: t("family_members")),
               const SizedBox(height: 12),
 
               _members.isEmpty
@@ -357,9 +345,9 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: const Text(
-                  "No members added yet.\nTap \"Add Member\" to begin.",
-                  style: TextStyle(color: Colors.grey),
+                child: Text(
+                  t("no_members_yet"),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               )
                   : Column(
@@ -372,13 +360,11 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                     ),
                     child: ListTile(
                       leading: CircleAvatar(
-                        child:
-                        Text(m.name.isNotEmpty ? m.name[0] : "?"),
+                        child: Text(
+                            m.name.isNotEmpty ? m.name[0] : "?"),
                       ),
                       title: Text(m.name),
-                      subtitle: Text(
-                        "Age: ${m.age} | ${m.relation ?? ''}",
-                      ),
+                      subtitle: Text("${t("age")}: ${m.age} | ${m.relation ?? ''}"),
                       onTap: () => _onEditMemberPressed(index),
                     ),
                   );
@@ -390,11 +376,14 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
           ),
         ),
       ),
+
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+
+            // SAVE BASICS
             ElevatedButton(
               onPressed: _onSaveFamilyBasics,
               style: ElevatedButton.styleFrom(
@@ -404,24 +393,28 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                _isEditMode
-                    ? "Update Family Basics"
-                    : "Save Family Basics",
+                _isEditMode ? t("update_family_basics") : t("save_family_basics"),
                 style: const TextStyle(color: Colors.white),
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // ADD MEMBER
             OutlinedButton.icon(
               onPressed: _basicsSaved ? _onAddMemberPressed : null,
               icon: const Icon(Icons.person_add_alt_1_outlined),
-              label: const Text("Add Member"),
+              label: Text(t("add_member")),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // FINAL SAVE
             ElevatedButton(
               onPressed: _onFinalSaveFamily,
               style: ElevatedButton.styleFrom(
@@ -430,9 +423,9 @@ class _AddFamilyPageState extends State<AddFamilyPage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text(
-                "Save Entire Family",
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                t("save_entire_family"),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],

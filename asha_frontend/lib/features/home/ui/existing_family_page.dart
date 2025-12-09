@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:asha_frontend/data/local/dao/families_dao.dart';
 import 'package:asha_frontend/core/services/api_service.dart';
 import 'package:asha_frontend/features/family/ui/add_family_page.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 
 class ExistingFamilyPage extends StatefulWidget {
   const ExistingFamilyPage({super.key});
@@ -29,11 +30,9 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
   }
 
   Future<void> loadFamilies() async {
-    // 1️⃣ Load offline families (local SQLite)
     offlineFamilies = await familiesDao.getAllFamilies();
     setState(() {});
 
-    // 2️⃣ Load online families from server
     _isLoadingOnline = true;
     _onlineError = null;
     setState(() {});
@@ -41,7 +40,6 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     try {
       final serverList = await api.getOnlineFamilies();
 
-      // Local server IDs to skip online duplicates
       final localServerIds = offlineFamilies
           .where((f) => f["client_id"] != null)
           .map((f) => f["client_id"])
@@ -52,7 +50,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
           .map((f) => f as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      _onlineError = "Could not load online families";
+      final t = AppLocalization.of(context).t;
+      _onlineError = t("could_not_load_online");
       onlineFamilies = [];
     }
 
@@ -62,29 +61,30 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text("Existing Families"),
-            bottom: const TabBar(
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              indicatorColor: Colors.white,
-              tabs: [
-                Tab(text: "Online Families"),
-                Tab(text: "Offline Families"),
-              ],
-            ),
+        appBar: AppBar(
+          title: Text(t("existing_families")),
+          bottom: TabBar(
+            labelColor: Colors.black,
+            unselectedLabelColor: Colors.white,
+            indicatorColor: Colors.black,
+            tabs: [
+              Tab(text: t("online_families")),
+              Tab(text: t("offline_families")),
+            ],
           ),
+        ),
         body: Column(
           children: [
-            // Search bar
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: "Search by Head Name / Address",
+                  hintText: t("search_hint"),
                   prefixIcon: const Icon(Icons.search),
                   isDense: true,
                   contentPadding:
@@ -100,8 +100,8 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildOnlineList(),
-                  _buildOfflineList(),
+                  _buildOnlineList(context),
+                  _buildOfflineList(context),
                 ],
               ),
             ),
@@ -111,10 +111,9 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     );
   }
 
-  // -------------------------------
-  // ONLINE FAMILIES LIST
-  // -------------------------------
-  Widget _buildOnlineList() {
+  Widget _buildOnlineList(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     if (_isLoadingOnline) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -128,7 +127,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: loadFamilies,
-              child: const Text("Retry"),
+              child: Text(t("retry")),
             ),
           ],
         ),
@@ -136,7 +135,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     }
 
     if (onlineFamilies.isEmpty) {
-      return const Center(child: Text("No Online Families"));
+      return Center(child: Text(t("no_online_families")));
     }
 
     final filtered = onlineFamilies.where((f) {
@@ -146,7 +145,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     }).toList();
 
     if (filtered.isEmpty) {
-      return const Center(child: Text("No matching results"));
+      return Center(child: Text(t("no_match")));
     }
 
     return ListView.builder(
@@ -155,7 +154,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
       itemBuilder: (context, index) {
         final fam = filtered[index];
         return _familyCard(
-          title: fam["head_name"] ?? "No head name",
+          title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.cloud_download,
           iconColor: Colors.blue,
@@ -173,12 +172,11 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     );
   }
 
-  // -------------------------------
-  // OFFLINE FAMILIES LIST
-  // -------------------------------
-  Widget _buildOfflineList() {
+  Widget _buildOfflineList(BuildContext context) {
+    final t = AppLocalization.of(context).t;
+
     if (offlineFamilies.isEmpty) {
-      return const Center(child: Text("No Offline Families"));
+      return Center(child: Text(t("no_offline_families")));
     }
 
     final filtered = offlineFamilies.where((f) {
@@ -188,7 +186,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     }).toList();
 
     if (filtered.isEmpty) {
-      return const Center(child: Text("No matching results"));
+      return Center(child: Text(t("no_match")));
     }
 
     return ListView.builder(
@@ -197,7 +195,7 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
       itemBuilder: (context, index) {
         final fam = filtered[index];
         return _familyCard(
-          title: fam["head_name"] ?? "No head name",
+          title: fam["head_name"] ?? t("no_head_name"),
           subtitle: fam["address_line"] ?? "",
           icon: Icons.edit,
           iconColor: Colors.green,
@@ -215,9 +213,6 @@ class _ExistingFamilyPageState extends State<ExistingFamilyPage>
     );
   }
 
-  // -------------------------------
-  // REUSABLE FAMILY CARD WIDGET
-  // -------------------------------
   Widget _familyCard({
     required String title,
     required String subtitle,

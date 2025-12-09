@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:asha_frontend/features/ncd/state/ncd_controller.dart';
 import 'package:asha_frontend/features/ncd/ui/ncd_result_page.dart';
+import 'package:asha_frontend/localization/app_localization.dart';
 
 class NcdForm extends StatefulWidget {
   final NcdController controller;
@@ -14,59 +15,58 @@ class _NcdFormState extends State<NcdForm> {
   @override
   Widget build(BuildContext context) {
     final c = widget.controller;
+    final t = AppLocalization.of(context).t;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "NCD Screening",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
+        Text(t("ncd_screening_title"),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "Blood Pressure",
+          title: t("blood_pressure"),
           icon: Icons.monitor_heart,
           children: [
-            _field("Systolic (mmHg)", c.systolic),
+            _field(t("systolic"), c.systolic),
             const SizedBox(height: 12),
-            _field("Diastolic (mmHg)", c.diastolic),
+            _field(t("diastolic"), c.diastolic),
           ],
         ),
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "BMI",
+          title: t("bmi"),
           icon: Icons.square_foot,
           children: [
-            _field("Weight (kg)", c.weight),
+            _field(t("weight"), c.weight),
             const SizedBox(height: 12),
-            _field("Height (cm)", c.height),
+            _field(t("height"), c.height),
           ],
         ),
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "Blood Sugar",
+          title: t("blood_sugar"),
           icon: Icons.water_drop,
           children: [
-            _field("Random Blood Sugar (mg/dL)", c.randomBloodSugar),
+            _field(t("random_blood_sugar"), c.randomBloodSugar),
           ],
         ),
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "Tobacco & Alcohol",
+          title: t("tobacco_alcohol"),
           icon: Icons.smoke_free,
           children: [
             _switchTile(
-              title: "Uses Tobacco?",
+              title: t("uses_tobacco"),
               value: c.usesTobacco,
               onChanged: (v) => setState(() => c.usesTobacco = v),
             ),
             const Divider(),
             _switchTile(
-              title: "Consumes Alcohol?",
+              title: t("consumes_alcohol"),
               value: c.consumesAlcohol,
               onChanged: (v) => setState(() => c.consumesAlcohol = v),
             ),
@@ -75,18 +75,22 @@ class _NcdFormState extends State<NcdForm> {
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "Diet",
+          title: t("diet"),
           icon: Icons.restaurant_menu,
           children: [
-            const Text("How much extra salt do you add?"),
+            Text(t("extra_salt")),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: ["None", "A little", "A lot"].map((label) {
+              children: [
+                "none",
+                "little",
+                "a_lot",
+              ].map((key) {
                 return _choiceChip(
-                  label: label,
-                  selected: c.extraSaltIntake == label,
-                  onSelected: () => setState(() => c.extraSaltIntake = label),
+                  label: t(key),
+                  selected: c.extraSaltIntake == key,
+                  onSelected: () => setState(() => c.extraSaltIntake = key),
                 );
               }).toList(),
             ),
@@ -95,20 +99,24 @@ class _NcdFormState extends State<NcdForm> {
 
         const SizedBox(height: 16),
         _metricCard(
-          title: "Physical Activity",
+          title: t("physical_activity"),
           icon: Icons.directions_run,
           children: [
-            const Text("Exercise frequency"),
+            Text(t("exercise_frequency")),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: ["Daily", "Few times a week", "Rarely", "Never"]
-                  .map((label) {
+              children: [
+                "daily",
+                "few_times_week",
+                "rarely",
+                "never",
+              ].map((key) {
                 return _choiceChip(
-                  label: label,
-                  selected: c.exerciseFrequency == label,
+                  label: t(key),
+                  selected: c.exerciseFrequency == key,
                   onSelected: () =>
-                      setState(() => c.exerciseFrequency = label),
+                      setState(() => c.exerciseFrequency = key),
                 );
               }).toList(),
             ),
@@ -117,6 +125,7 @@ class _NcdFormState extends State<NcdForm> {
 
         const SizedBox(height: 20),
 
+        // CRITICAL WARNING
         if (c.isCritical)
           Container(
             padding: const EdgeInsets.all(14),
@@ -124,13 +133,13 @@ class _NcdFormState extends State<NcdForm> {
               color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.warning, color: Colors.red),
-                SizedBox(width: 8),
+                const Icon(Icons.warning, color: Colors.red),
+                const SizedBox(width: 8),
                 Text(
-                  "Critical values detected",
-                  style: TextStyle(
+                  t("critical_detected"),
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
                   ),
@@ -146,24 +155,21 @@ class _NcdFormState extends State<NcdForm> {
           width: double.infinity,
           child: ElevatedButton.icon(
             icon: const Icon(Icons.analytics),
-            label: const Text("Calculate NCD Risk"),
+            label: Text(t("calculate_ncd_risk")),
             onPressed: () {
               final prediction = c.calculateRisk();
 
               if (prediction == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                    Text("Please enter at least some NCD details."),
-                  ),
+                  SnackBar(content: Text(t("enter_ncd_details"))),
                 );
                 return;
               }
 
-              // Refresh to update critical banner if risk is high
-              setState(() {});
+              setState(() {}); // update warning banner
 
-              Navigator.of(context).push(
+              Navigator.push(
+                context,
                 MaterialPageRoute(
                   builder: (_) => NcdResultPage(result: prediction),
                 ),
